@@ -13,6 +13,7 @@ export const tusk: CharacterDef = {
   height: 96, width: 14,
   stage: 1,
   look: {
+    face: { jaw: 1.28, nose: 1.1, eye: 0.85, brow: 1.25, eyeColor: '#4a6a8a' },
     skin: '#efc8a8', hair: '#3a2a22', top: '#121212', top2: '#121212', pants: '#22252c', shoes: '#222222',
     accent: '#c03040', hairStyle: 'short', topStyle: 'tee', height: 1.07, bulk: 1.05, emblem: 'rocket',
   },

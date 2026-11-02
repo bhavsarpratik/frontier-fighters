@@ -7,6 +7,7 @@ export interface Pose {
   bl: [number, number]; fl: [number, number];
   dx?: number; dy?: number;
   open?: number;
+  expr?: 'pain' | 'shout';
 }
 
 const P = (t: number, h: number, ba: [number, number], fa: [number, number], bl: [number, number], fl: [number, number], dx = 0, dy = 0, open = 0): Pose =>
@@ -78,6 +79,9 @@ export const POSES: Record<string, Pose> = {
   portrait: P(4, 2, [8, 14], [12, 18], [-6, 2], [8, 4]),
 };
 
+for (const k of ['hit', 'hitc', 'air', 'kd']) POSES[k].expr = 'pain';
+for (const k of ['sHP', 'sHK', 'cHP', 'cHK', 'jK', 'jP', 'uppercut', 'super', 'super0', 'rush', 'cast', 'slam', 'flurryA', 'flurryB', 'kickA', 'throw2', 'counterHit', 'win', 'win2']) POSES[k].expr = 'shout';
+
 // Animation keyframes. For moves, frame anchors are symbolic:
 // 's' = 0, 'a' = startup, 'r' = startup + active, 'e' = total. Optional offset in frames.
 export type Key = [string, number, string];
@@ -136,7 +140,7 @@ export function lerpPose(a: Pose, b: Pose, t: number): Pose {
   return {
     t: lerp(a.t, b.t, t), h: lerp(a.h, b.h, t),
     ba: l2(a.ba, b.ba, t), fa: l2(a.fa, b.fa, t), bl: l2(a.bl, b.bl, t), fl: l2(a.fl, b.fl, t),
-    dx: lerp(a.dx ?? 0, b.dx ?? 0, t), dy: lerp(a.dy ?? 0, b.dy ?? 0, t), open: t < 0.5 ? a.open : b.open,
+    dx: lerp(a.dx ?? 0, b.dx ?? 0, t), dy: lerp(a.dy ?? 0, b.dy ?? 0, t), open: t < 0.5 ? a.open : b.open, expr: t < 0.5 ? a.expr : b.expr,
   };
 }
 

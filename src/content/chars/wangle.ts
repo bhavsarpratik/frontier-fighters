@@ -13,6 +13,7 @@ export const wangle: CharacterDef = {
   height: 91, width: 14,
   stage: 2,
   look: {
+    face: { jaw: 0.9, nose: 0.8, eye: 0.95, brow: 1.1, smile: 0.4, eyeColor: '#1a1210' },
     skin: '#e9c19c', hair: '#121212', top: '#1f2a44', top2: '#f2f2f2', pants: '#1f2a44', shoes: '#141414',
     accent: '#7b5cff', hairStyle: 'side', topStyle: 'suit', height: 0.99, bulk: 0.95,
   },

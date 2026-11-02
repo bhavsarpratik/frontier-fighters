@@ -13,6 +13,7 @@ export const codeaux: CharacterDef = {
   height: 88, width: 13,
   stage: 3,
   look: {
+    face: { jaw: 1.05, nose: 1.0, eye: 1.0, brow: 1.2 },
     skin: '#e6b08c', hair: '#2a1d17', top: '#16181d', top2: '#34d399', pants: '#25272d', shoes: '#f0f0f0',
     accent: '#34d399', hairStyle: 'messy', topStyle: 'hoodie', height: 0.97, bulk: 0.95, beard: true, visor: '#34d399',
   },

@@ -13,6 +13,7 @@ export const potetron: CharacterDef = {
   height: 90, width: 14,
   stage: 3,
   look: {
+    face: { smile: 1 },
     skin: '#e0b090', hair: '#000000', top: '#151515', top2: '#ffffff', pants: '#2b3a55', shoes: '#e04040',
     accent: '#ffd23e', hairStyle: 'none', topStyle: 'tee', height: 0.97, bulk: 1, head: 'potato', shades: true, emblem: 'none',
   },

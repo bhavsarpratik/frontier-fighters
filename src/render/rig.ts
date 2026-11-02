@@ -1,6 +1,7 @@
 import type { Look } from '../content/types.ts';
 import { hex, mix, pack, ramp, rotateHue, type Ramp, type RGB } from './color.ts';
-import { rasterize, type Detail, type Raster, type Shape } from './raster.ts';
+import { type Detail, type Raster, type Shape } from './raster.ts';
+import { renderToon } from './toon.ts';
 import type { Pose } from './poses.ts';
 
 // Logical sprite frame (in 1x pixels). Sprites are rasterized at `res` times this size.
@@ -333,9 +334,8 @@ export function spriteFor(key: string, look: Look, pose: Pose, res = RES, rim?: 
   }
   const ox = Math.round(ORIGIN_X * res);
   const oy = Math.round(ORIGIN_Y * res);
-  const b = buildShapes(look, pose, res, ox, oy);
-  const r = rasterize(b.shapes, b.details, Math.round(SPR_W * res), Math.round(SPR_H * res), rim);
-  s = { ...r, res, ox, oy, headX: b.head[0], headY: b.head[1] };
+  const r = renderToon(look, pose, res, Math.round(SPR_W * res), Math.round(SPR_H * res), ox, oy, rim);
+  s = { canvas: r.canvas, w: r.w, h: r.h, x0: r.x0, y0: r.y0, res, ox, oy, headX: r.head[0], headY: r.head[1] };
   cache.set(k, s);
   if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value!);
   return s;

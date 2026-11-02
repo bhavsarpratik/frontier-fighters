@@ -14,6 +14,7 @@ export const altmind: CharacterDef = {
   stage: 1,
   passive: 'rehired',
   look: {
+    face: { jaw: 0.88, nose: 0.85, eye: 1.3, brow: 0.8, eyeColor: '#3a7a5a' },
     skin: '#f0c8a8', hair: '#7a5236', top: '#4f6a8f', top2: '#435b7c', pants: '#b5a585', shoes: '#e8e8e8',
     accent: '#10a37f', hairStyle: 'short', topStyle: 'sweater', height: 0.93, bulk: 0.92,
   },

@@ -16,6 +16,7 @@ export const zuckerbot: CharacterDef = {
   height: 88, width: 15,
   stage: 0,
   look: {
+    face: { jaw: 1.05, nose: 1.0, eye: 1.2, brow: 0.9, eyeColor: '#5a7aa0' },
     skin: '#f6dccb', hair: '#4a3528', top: '#8b9099', top2: '#8b9099', pants: '#3b4252', shoes: '#f0f0f0',
     accent: '#e8b23a', hairStyle: 'curly', topStyle: 'tee', height: 0.96, bulk: 1.14, chain: true,
   },

@@ -13,6 +13,7 @@ export const karpathink: CharacterDef = {
   height: 92, width: 14,
   stage: 1,
   look: {
+    face: { jaw: 0.95, nose: 1.1, eye: 1.05, brow: 1.0, eyeColor: '#4a3020' },
     skin: '#e8b38f', hair: '#4a3326', top: '#2d3242', top2: '#e8e8e8', pants: '#3e4f73', shoes: '#dcdcdc',
     accent: '#ffffff', hairStyle: 'short', topStyle: 'tee', height: 1, bulk: 0.95, emblem: 'none',
   },

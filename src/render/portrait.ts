@@ -1,7 +1,7 @@
 import { ROSTER } from '../content/roster.ts';
 import { POSES } from './poses.ts';
-import { altLook, buildShapes } from './rig.ts';
-import { rasterize } from './raster.ts';
+import { altLook } from './rig.ts';
+import { renderToon } from './toon.ts';
 
 const cache = new Map<string, { c: HTMLCanvasElement; x: number; y: number; s: number }>();
 const RES = 7;
@@ -15,14 +15,13 @@ function source(char: number, alt: boolean) {
   const look = alt ? altLook(def.look) : def.look;
   const W = 62 * RES;
   const H = 120 * RES;
-  const b = buildShapes(look, POSES.portrait, RES, W / 2, H - 2 * RES);
-  const r = rasterize(b.shapes, b.details, W, H);
+  const r = renderToon(look, POSES.portrait, RES, W, H, W / 2, H - 2 * RES);
   const c = document.createElement('canvas');
   c.width = r.w;
   c.height = r.h;
   c.getContext('2d')!.drawImage(r.canvas as CanvasImageSource, 0, 0);
   const crop = 34 * RES;
-  e = { c, x: b.head[0] - r.x0 - crop * 0.55, y: b.head[1] - r.y0 - crop * 0.42, s: crop };
+  e = { c, x: r.head[0] - r.x0 - crop * 0.5, y: r.head[1] - r.y0 - crop * 0.4, s: crop };
   cache.set(key, e);
   return e;
 }

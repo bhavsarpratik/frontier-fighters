@@ -93,6 +93,7 @@ export interface Look {
   visor?: string;
   emblem?: 'rocket' | 'chip' | 'box' | 'none';
   palette2?: Partial<Look>;
+  face?: { jaw?: number; nose?: number; eye?: number; brow?: number; smile?: number; lines?: boolean; eyeColor?: string };
 }
 
 export interface CharacterDef {

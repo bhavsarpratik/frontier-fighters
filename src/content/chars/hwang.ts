@@ -17,6 +17,7 @@ export const hwang: CharacterDef = {
   height: 92, width: 16,
   stage: 0,
   look: {
+    face: { jaw: 1.12, nose: 1.15, eye: 0.9, brow: 1.1, smile: 1.2, lines: true },
     skin: '#e2b48e', hair: '#cfcfcf', top: '#141414', top2: '#3a3a3a', pants: '#1c1c1c', shoes: '#0e0e0e',
     accent: '#76b900', hairStyle: 'swept', topStyle: 'jacket', height: 0.99, bulk: 1.18,
   },

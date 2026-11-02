@@ -152,6 +152,12 @@ export class CharSelect implements Screen {
       const def = ROSTER[this.cur[p]];
       const x = p === 0 ? 70 : 410;
       drawIdleFighter(ctx, this.cur[p], x, 210, this.t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.6, this.locked[p] ? 'win' : 'idle');
+      const g = ctx.createLinearGradient(p === 0 ? 0 : 480, 0, p === 0 ? 230 : 250, 0);
+      g.addColorStop(0, 'rgba(6,3,18,0.86)');
+      g.addColorStop(0.75, 'rgba(6,3,18,0.6)');
+      g.addColorStop(1, 'rgba(6,3,18,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(p === 0 ? 0 : 250, 28, 230, 136);
       const tx = p === 0 ? 6 : 474;
       const al = p === 0 ? 'left' : 'right';
       drawText(ctx, def.name, tx, 34, { align: al, color: '#fff' });
