@@ -15,7 +15,7 @@ export function portrait(char: number, alt = false, size = 64): HTMLCanvasElemen
   const scale = 3;
   const W = 300;
   const H = 420;
-  const b = buildShapes(look, { ...POSES.intro, t: 2, h: 4 }, scale);
+  const b = buildShapes(look, POSES.portrait, scale);
   const dx = 150 - 80;
   const dy = 410 - 146;
   for (const s of b.shapes) {

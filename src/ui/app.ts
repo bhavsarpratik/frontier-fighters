@@ -10,6 +10,7 @@ export interface Screen {
 export const app = {
   screen: null as Screen | null,
   boxes: false,
+  autoplay: false,
   frame: 0,
   go(s: Screen): void {
     this.screen?.leave?.();

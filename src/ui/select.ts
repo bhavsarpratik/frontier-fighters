@@ -79,6 +79,7 @@ export class CharSelect implements Screen {
   update(menu: MenuInput[]): void {
     this.t++;
     const n = ROSTER.length;
+    if (app.autoplay && this.t === 30 && this.net && !this.locked[this.net.local]) menu = [...menu, { up: false, down: false, left: false, right: false, ok: true, back: false, who: 0 }];
     for (const m of menu) {
       const p = this.controlled(m.who);
       if (m.back) {
@@ -192,6 +193,7 @@ export class StageSelect implements Screen {
 
   update(menu: MenuInput[]): void {
     this.t++;
+    if (app.autoplay && this.t === 30) menu = [...menu, { up: false, down: false, left: false, right: false, ok: true, back: false, who: 0 }];
     for (const m of menu) {
       if (m.left) { this.sel = (this.sel + STAGES.length - 1) % STAGES.length; sfx.menu(); }
       if (m.right) { this.sel = (this.sel + 1) % STAGES.length; sfx.menu(); }

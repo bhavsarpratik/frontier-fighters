@@ -18,6 +18,7 @@ export interface MatchConfig {
   cpu?: Difficulty;
   net?: NetLink;
   delay?: number;
+  demo?: boolean;
 }
 
 export class VsScreen implements Screen {

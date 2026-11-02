@@ -34,11 +34,33 @@ window.addEventListener('keydown', (e) => {
 });
 
 const room = params.get('room');
-if (room) {
+const demo = params.get('demo');
+if (demo !== null) {
+  const [p1, p2, stage] = (demo || '0,1,0').split(',').map(Number);
+  void import('./ui/match.ts').then((m) => app.go(new m.MatchScreen({ mode: 'cpu', p1, p2, stage, seed: 4242, cpu: 2, demo: true })));
+} else if (params.get('bc') || params.get('p2p')) {
+  // Dev/test entry: connect straight to a room and (with &auto) let the CPU play both sides.
+  app.autoplay = params.has('auto');
+  const code = (params.get('bc') ?? params.get('p2p'))!;
+  const host = params.get('role') !== 'guest';
+  void Promise.all([import('./net/broadcast.ts'), import('./net/webrtc.ts'), import('./ui/netlink.ts'), import('./ui/select.ts')]).then(async ([b, w, n, sel]) => {
+    const t = params.get('bc')
+      ? await b.broadcastConnect(code, () => {})
+      : await w.trysteroConnect({ code, strategy: (params.get('strategy') as 'nostr' | 'mqtt') ?? 'nostr', onStatus: (s) => console.log('net:', s) });
+    const net = new n.NetLink(host ? 0 : 1, t, params.get('bc') ? 'SAME COMPUTER' : `ROOM ${code}`);
+    const pick = Number(params.get('pick') ?? (host ? 0 : 1));
+    app.go(new sel.CharSelect('online', net, [pick, pick]));
+  });
+} else if (params.get('screen') === 'select') {
+  void import('./ui/select.ts').then((m) => app.go(new m.CharSelect('local', undefined, [2, 5])));
+} else if (room) {
   void import('./ui/lobby.ts').then((m) => app.go(new m.LobbyScreen(room)));
 } else {
   app.go(new TitleScreen());
 }
+
+const ffFrames = Number(params.get('ff') ?? 0);
+if (ffFrames > 0) setTimeout(() => { for (let i = 0; i < ffFrames; i++) app.tick(); }, 50);
 
 const STEP = 1000 / 60;
 let last = performance.now();

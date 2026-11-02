@@ -168,9 +168,10 @@ export function buildShapes(look: Look, pose: Pose, scale: number): { shapes: Sh
     const k = Math.max(1, Math.round(S));
     const col = look.emblem === 'chip' ? R.accent.hi : look.emblem === 'box' ? R.accent.base : R.white.base;
     if (look.emblem === 'rocket') {
-      px([c[0], c[1] - 3 * k], col, k, 5 * k);
+      px([c[0], c[1] - 3 * k], R.accent.hi, k, k);
+      px([c[0], c[1] - 2 * k], col, k, 4 * k);
       px([c[0] - k, c[1] + k], col, 3 * k, k);
-      px([c[0], c[1] + 2 * k], R.accent.base, k, k);
+      px([c[0], c[1] + 2 * k], pack([255, 176, 0]), k, k);
     } else if (look.emblem === 'chip') {
       px([c[0] - 2 * k, c[1] - 2 * k], col, 4 * k, 4 * k);
       px([c[0] - k, c[1] - k], R.dark.base, 2 * k, 2 * k);

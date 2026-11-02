@@ -22,6 +22,7 @@ export class MatchScreen implements Screen {
   scene: MatchScene;
   session: RollbackSession | null = null;
   cpu: Cpu | null = null;
+  cpu1: Cpu | null = null;
   paused = false;
   pauseMenu: MenuList;
   endT = 0;
@@ -38,6 +39,7 @@ export class MatchScreen implements Screen {
     this.scene = new MatchScene(cfg.stage, cfg.p1, cfg.p2);
     if (cfg.mode === 'cpu') this.cpu = new Cpu(cfg.cpu ?? 1, cfg.seed);
     if (cfg.mode === 'training') this.cpu = new Cpu(1, cfg.seed);
+    if (cfg.demo || app.autoplay) this.cpu1 = new Cpu(2, (cfg.seed ^ 0x5bd1e995) + (cfg.net?.local ?? 0));
     if (cfg.mode === 'online' && cfg.net) {
       this.session = new RollbackSession({ local: cfg.net.local, transport: cfg.net.transport, init: this.state, delay: cfg.delay ?? 2 });
       cfg.net.onMsg = (m) => {
@@ -103,7 +105,8 @@ export class MatchScreen implements Screen {
       this.updateOnline();
     } else if (!this.frameStep || this.stepOnce) {
       this.stepOnce = false;
-      const [a, b0] = this.localInputs();
+      const [a0, b0] = this.localInputs();
+      const a = this.cpu1 ? this.cpu1.input(this.state, 0) : a0;
       let b = b0;
       if (this.cfg.mode === 'cpu') b = this.cpu!.input(this.state, 1);
       if (this.cfg.mode === 'training') b = dummyInput(this.dummyMode, this.state, 1, this.cpu!);
@@ -138,7 +141,8 @@ export class MatchScreen implements Screen {
       }
       return;
     }
-    const [a] = this.localInputs();
+    const me = this.cfg.net!.local;
+    const a = this.cpu1 ? this.cpu1.input(this.state, me) : this.localInputs()[0];
     const r = s.tick(a);
     this.state = r.state;
     this.handleEvents(r.events);

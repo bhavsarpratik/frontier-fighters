@@ -75,6 +75,7 @@ export const POSES: Record<string, Pose> = {
   slam: P(40, 6, [70, 0], [80, 0], [-30, 4], [50, 60], 6),
   taunt: P(-4, -6, [30, 40], [110, 100], [-8, 2], [8, 2], 0, 0, 1),
   hover: P(0, -4, [60, 30], [70, 30], [10, 30], [20, 40]),
+  portrait: P(4, 2, [8, 14], [12, 18], [-6, 2], [8, 4]),
 };
 
 // Animation keyframes. For moves, frame anchors are symbolic:

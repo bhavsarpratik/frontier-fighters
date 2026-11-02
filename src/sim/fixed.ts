@@ -9,7 +9,7 @@ export const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo
 export const STAGE_W = 720;
 export const SCREEN_W = 480;
 export const SCREEN_H = 270;
-export const STAGE_MARGIN = 20;
+export const STAGE_MARGIN = 30;
 export const MAX_SEPARATION = 400;
 export const ROUND_FRAMES = 60 * 60;
 export const MAX_METER = 300;
