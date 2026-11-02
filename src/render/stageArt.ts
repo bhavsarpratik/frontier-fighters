@@ -1,6 +1,14 @@
 import { drawText } from './font.ts';
 
 export const GROUND_Y = 236;
+
+// Per-stage light used on fighters (rim colour) plus floor gloss and depth haze.
+export const STAGE_LIGHT: { rim: [number, number, number]; reflect: number; haze: string }[] = [
+  { rim: [90, 230, 255], reflect: 0.14, haze: 'rgba(30,80,160,0.22)' },
+  { rim: [255, 170, 110], reflect: 0.1, haze: 'rgba(200,90,110,0.16)' },
+  { rim: [255, 220, 150], reflect: 0.12, haze: 'rgba(60,50,40,0.25)' },
+  { rim: [255, 90, 220], reflect: 0.18, haze: 'rgba(60,20,90,0.25)' },
+];
 const W = 720;
 const FAR_W = 600;
 const H = 270;
@@ -300,6 +308,68 @@ export function drawStage(ctx: Ctx, i: number, camX: number, t: number): void {
   ctx.fillRect(0, 0, 480, 270);
   const farX = Math.round(camX * ((FAR_W - 480) / (W - 480)));
   ctx.drawImage(s.far, -farX, 0);
+  const light = STAGE_LIGHT[i % STAGE_LIGHT.length];
+  ctx.fillStyle = light.haze;
+  ctx.fillRect(0, 0, 480, GROUND_Y);
   ctx.drawImage(s.mid, -Math.round(camX), 0);
   s.anim(ctx, Math.round(camX), t);
+  // depth haze so the fighters pop off the background
+  const g = ctx.createLinearGradient(0, 60, 0, GROUND_Y);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, light.haze);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 480, GROUND_Y);
+  lights(ctx, i, camX, t);
 }
+
+function lights(ctx: Ctx, i: number, camX: number, t: number): void {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  if (i === 1) {
+    for (let k = 0; k < 5; k++) {
+      const x = 420 - camX * 0.3 - k * 70;
+      const g = ctx.createLinearGradient(x, 60, x - 160, 260);
+      g.addColorStop(0, 'rgba(255,190,120,0.14)');
+      g.addColorStop(1, 'rgba(255,190,120,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x, 40);
+      ctx.lineTo(x + 18, 40);
+      ctx.lineTo(x - 120, 270);
+      ctx.lineTo(x - 190, 270);
+      ctx.fill();
+    }
+  } else if (i === 2) {
+    for (let k = 0; k < 4; k++) {
+      const x = 60 + k * 130 - (camX % 130);
+      const g = ctx.createLinearGradient(0, 0, 0, 240);
+      g.addColorStop(0, 'rgba(255,240,200,0.18)');
+      g.addColorStop(1, 'rgba(255,240,200,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + 30, 0);
+      ctx.lineTo(x + 70, 240);
+      ctx.lineTo(x - 20, 240);
+      ctx.fill();
+    }
+  } else if (i === 0) {
+    const pulse = 0.08 + 0.04 * Math.sin(t / 25);
+    const g = ctx.createRadialGradient(240, 300, 20, 240, 300, 260);
+    g.addColorStop(0, `rgba(80,220,255,${pulse})`);
+    g.addColorStop(1, 'rgba(80,220,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 480, 270);
+  } else if (i === 3) {
+    const x = 400 - camX;
+    const flick = (t >> 2) % 23 === 0 ? 0.3 : 1;
+    const g = ctx.createRadialGradient(x, 140, 4, x, 140, 140);
+    g.addColorStop(0, `rgba(255,80,220,${0.35 * flick})`);
+    g.addColorStop(1, 'rgba(255,80,220,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 140, 0, 280, 270);
+  }
+  ctx.restore();
+}
+
+

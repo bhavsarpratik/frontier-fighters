@@ -14,6 +14,8 @@ import { MenuList } from './menu.ts';
 import { ResultsScreen } from './results.ts';
 import { TitleScreen } from './title.ts';
 import { CharSelect } from './select.ts';
+import { Coach, basicsLines, drawMoveList, hintsEnabled, setHints } from './hints.ts';
+import { P_INTRO } from '../sim/types.ts';
 import type { MatchConfig } from './vs.ts';
 
 export class MatchScreen implements Screen {
@@ -31,6 +33,8 @@ export class MatchScreen implements Screen {
   stepOnce = false;
   inputLog: number[][] = [];
   netStatus = '';
+  coaches: Coach[] = [];
+  showMoves = false;
   private fnPrev = new Set<string>();
 
   constructor(cfg: MatchConfig) {
@@ -46,8 +50,15 @@ export class MatchScreen implements Screen {
         if (m.t === 'leave') cfg.net!.closed = true;
       };
     }
+    if (!cfg.demo) {
+      if (cfg.mode === 'local') this.coaches = [new Coach(0, 'p1duo'), new Coach(1, 'p2duo')];
+      else this.coaches = [new Coach(cfg.net?.local ?? 0, 'solo')];
+      for (const c of this.coaches) c.enabled = hintsEnabled();
+    }
     this.pauseMenu = new MenuList([
       { label: 'RESUME', act: () => { this.paused = false; } },
+      { label: 'MOVE LIST', act: () => { this.showMoves = true; } },
+      { label: 'TOGGLE HINTS', act: () => this.toggleHints() },
       { label: 'CHARACTER SELECT', act: () => app.go(new CharSelect(cfg.mode, undefined, [cfg.p1, cfg.p2])) },
       { label: 'MAIN MENU', act: () => app.go(new TitleScreen()) },
     ]);
@@ -75,7 +86,14 @@ export class MatchScreen implements Screen {
     return now && !was;
   }
 
+  private toggleHints(): void {
+    const on = !(this.coaches[0]?.enabled ?? true);
+    for (const c of this.coaches) c.enabled = on;
+    setHints(on);
+  }
+
   private handleEvents(evs: SimEvent[]): void {
+    for (const c of this.coaches) c.onEvents(evs, this.state);
     if (!evs.length) return;
     this.scene.onEvents(evs);
     playEvents(evs, this.state.f.map((f) => ROSTER[f.char].short));
@@ -91,6 +109,11 @@ export class MatchScreen implements Screen {
     if (!online && menu.some((m) => m.back) && this.state.phase !== P_MATCH_END) {
       this.paused = !this.paused;
       sfx.back();
+      return;
+    }
+    if (this.fnPressed('F6')) this.toggleHints();
+    if (this.showMoves) {
+      if (menu.some((m) => m.ok || m.back)) this.showMoves = false;
       return;
     }
     if (this.paused) {
@@ -119,6 +142,7 @@ export class MatchScreen implements Screen {
       this.handleEvents(this.state.events);
     }
     this.scene.update(this.state);
+    for (const c of this.coaches) c.update(this.state);
     if (this.state.phase === P_MATCH_END) {
       this.endT++;
       if (this.endT > 150) app.go(new ResultsScreen(this.cfg, this.state));
@@ -161,6 +185,17 @@ export class MatchScreen implements Screen {
         : this.cfg.mode === 'cpu' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
     this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined });
     if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
+    if (this.coaches.length && this.state.phase === P_INTRO && this.state.round === 1 && this.coaches[0].enabled) {
+      ctx.fillStyle = 'rgba(5,3,20,0.82)';
+      ctx.fillRect(40, 168, 400, this.coaches.length * 26 + 8);
+      this.coaches.forEach((c, i) => {
+        const who = this.coaches.length > 1 ? `P${c.p + 1}: ` : '';
+        basicsLines(c.layout).forEach((l, j) => drawText(ctx, (j === 0 ? who : '') + l, 240, 173 + i * 26 + j * 11, { align: 'center', color: j ? '#ffd23e' : '#fff' }));
+      });
+    } else if (this.coaches.length > 1) {
+      this.coaches[0].draw(ctx, 'left');
+      this.coaches[1].draw(ctx, 'right');
+    } else this.coaches[0]?.draw(ctx, 'center');
     if (training) {
       drawText(ctx, `F1 BOXES  F2 ${this.frameStep ? 'RUN' : 'PAUSE'}  F3 STEP  F4 DUMMY: ${DUMMY_MODES[this.dummyMode]}  F5 RESET`, 240, 240, { align: 'center', color: '#bfe9ff' });
       this.frameAdvantage(ctx);
@@ -174,7 +209,15 @@ export class MatchScreen implements Screen {
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(0, 0, 480, 270);
       drawText(ctx, 'PAUSED', 240, 90, { scale: 3, align: 'center', color: '#fff', outline: '#000', shadow: null });
-      this.pauseMenu.render(ctx, 240, 130, app.frame);
+      this.pauseMenu.render(ctx, 240, 124, app.frame);
+      drawText(ctx, `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}  (F6)`, 240, 200, { align: 'center', color: '#8a84a8' });
+    }
+    if (this.showMoves) {
+      ctx.fillStyle = 'rgba(5,3,20,0.94)';
+      ctx.fillRect(0, 0, 480, 270);
+      const cs = this.coaches.length ? this.coaches : [new Coach(0, 'solo')];
+      cs.forEach((c, i) => drawMoveList(ctx, this.state.f[c.p].char, c.layout, cs.length > 1 ? 12 + i * 236 : 120, 16, `${cs.length > 1 ? `P${c.p + 1} ` : ''}MOVE LIST`));
+      drawText(ctx, 'EASY = ONE BUTTON.  PRO = MOTION, STRONGER WITH 2 BUTTONS (EX).   ENTER TO CLOSE', 240, 256, { align: 'center', color: '#8a84a8' });
     }
   }
 

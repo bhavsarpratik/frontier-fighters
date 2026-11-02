@@ -17,10 +17,18 @@ void main(){
   vec2 texel = q * src;
   vec2 snap = (floor(texel) + 0.5) / src;
   vec3 col = texture(tex, snap).rgb;
+  // bloom: gather bright neighbours on two rings
+  vec3 glow = vec3(0.0);
+  for (int i = 0; i < 12; i++) {
+    float a = float(i) * 0.5236;
+    vec2 d = vec2(cos(a), sin(a));
+    vec3 s1 = texture(tex, q + d * 3.0 / src).rgb;
+    vec3 s2 = texture(tex, q + d * 7.0 / src).rgb;
+    glow += max(s1 - 0.62, 0.0) + max(s2 - 0.62, 0.0) * 0.6;
+  }
+  col += glow * 0.11;
   if (crt > 0.5) {
-    vec3 bl = (texture(tex, snap + vec2(1.0,0.0)/src).rgb + texture(tex, snap - vec2(1.0,0.0)/src).rgb) * 0.5;
-    col += max(bl - 0.6, 0.0) * 0.35;
-    float line = 0.82 + 0.18 * sin(fract(texel.y) * 3.14159);
+    float line = 0.86 + 0.14 * sin(fract(texel.y * 0.5) * 3.14159);
     float mask = 0.94 + 0.06 * sin(gl_FragCoord.x * 2.094);
     vec2 v = q * (1.0 - q);
     float vig = clamp(pow(v.x * v.y * 18.0, 0.18), 0.0, 1.0);

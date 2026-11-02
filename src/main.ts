@@ -7,8 +7,9 @@ import { TitleScreen } from './ui/title.ts';
 const params = new URLSearchParams(location.search);
 const screenEl = document.getElementById('screen') as HTMLCanvasElement;
 const frame = document.createElement('canvas');
-frame.width = 480;
-frame.height = 270;
+export const DPR = 2;
+frame.width = 480 * DPR;
+frame.height = 270 * DPR;
 const ctx = frame.getContext('2d', { alpha: false })!;
 ctx.imageSmoothingEnabled = false;
 
@@ -51,6 +52,9 @@ if (demo !== null) {
     const pick = Number(params.get('pick') ?? (host ? 0 : 1));
     app.go(new sel.CharSelect('online', net, [pick, pick]));
   });
+} else if (params.get('match')) {
+  const [p1, p2, stage] = params.get('match')!.split(',').map(Number);
+  void import('./ui/match.ts').then((m) => app.go(new m.MatchScreen({ mode: 'cpu', p1, p2, stage, seed: 99, cpu: 1 })));
 } else if (params.get('screen') === 'select') {
   void import('./ui/select.ts').then((m) => app.go(new m.CharSelect('local', undefined, [2, 5])));
 } else if (room) {
@@ -77,6 +81,8 @@ function loop(now: number): void {
   if (n === 5) acc = 0;
   if (app.screen) {
     ctx.save();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     app.screen.render(ctx);
     ctx.restore();
   }

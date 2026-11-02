@@ -2,7 +2,7 @@ import { ROSTER } from '../content/roster.ts';
 import { STAGES } from '../content/stages.ts';
 import type { Difficulty } from '../ai/cpu.ts';
 import { drawText } from '../render/font.ts';
-import { portrait } from '../render/portrait.ts';
+import { drawPortrait } from '../render/portrait.ts';
 import type { MenuInput } from '../input/devices.ts';
 import { app, drawBackdrop, type Screen } from './app.ts';
 import type { NetLink } from './netlink.ts';
@@ -40,12 +40,8 @@ export class VsScreen implements Screen {
     const e = 1 - Math.pow(1 - slide, 3);
     const [a, b] = [this.cfg.p1, this.cfg.p2];
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(portrait(a, false, 128), -140 + 180 * e, 60);
-    ctx.save();
-    ctx.translate(480, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(portrait(b, a === b, 128), -140 + 180 * e, 60);
-    ctx.restore();
+    drawPortrait(ctx, a, false, -140 + 180 * e, 60, 128);
+    drawPortrait(ctx, b, a === b, 480 - (-140 + 180 * e) - 128, 60, 128, true);
     drawText(ctx, ROSTER[a].name, 20 + (1 - e) * -200, 200, { scale: 1, color: '#7ad7ff', outline: '#000', shadow: null });
     drawText(ctx, ROSTER[b].name, 460 + (1 - e) * 200, 200, { scale: 1, align: 'right', color: '#ff8ab0', outline: '#000', shadow: null });
     if (this.t > 16) {

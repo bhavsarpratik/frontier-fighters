@@ -3,15 +3,16 @@ import { ROSTER } from '../content/roster.ts';
 import { STAGES } from '../content/stages.ts';
 import { DIFF_NAMES, type Difficulty } from '../ai/cpu.ts';
 import { drawText, wrap } from '../render/font.ts';
-import { portrait } from '../render/portrait.ts';
+import { drawPortrait } from '../render/portrait.ts';
 import { samplePose } from '../render/poses.ts';
-import { altLook, ORIGIN_X, ORIGIN_Y, poseKey, spriteFor } from '../render/rig.ts';
+import { altLook, drawSprite, poseKey, spriteFor } from '../render/rig.ts';
 import { drawStage } from '../render/stageArt.ts';
 import type { MenuInput } from '../input/devices.ts';
 import { app, drawBackdrop, type Screen } from './app.ts';
 import { TitleScreen } from './title.ts';
 import type { NetLink } from './netlink.ts';
 import { VsScreen } from './vs.ts';
+import { moveList } from './hints.ts';
 
 export type Mode = 'cpu' | 'local' | 'training' | 'online';
 
@@ -22,13 +23,9 @@ export function drawIdleFighter(ctx: CanvasRenderingContext2D, char: number, x: 
   const def = ROSTER[char];
   const look = alt ? altLook(def.look) : def.look;
   const pose = samplePose(anim, t);
-  const spr = spriteFor(`${char}|${alt ? 1 : 0}|${poseKey(pose)}`, look, pose);
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  ctx.translate(x, y);
-  if (flip) ctx.scale(-1, 1);
-  ctx.drawImage(spr.canvas as CanvasImageSource, -ORIGIN_X * scale, -ORIGIN_Y * scale, spr.w * scale, spr.h * scale);
-  ctx.restore();
+  const res = Math.max(2, Math.ceil(scale * 2));
+  const spr = spriteFor(`${char}|${alt ? 1 : 0}|${poseKey(pose)}`, look, pose, res);
+  drawSprite(ctx, spr, x, y, flip, scale);
 }
 
 export class CharSelect implements Screen {
@@ -135,7 +132,7 @@ export class CharSelect implements Screen {
       const y = gy + Math.floor(i / COLS) * CELL;
       ctx.fillStyle = '#000';
       ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
-      ctx.drawImage(portrait(i, false, CELL - 4), x + 2, y + 2);
+      drawPortrait(ctx, i, false, x + 2, y + 2, CELL - 4);
     }
     const label = this.mode === 'online' ? ['P1', 'P2'] : this.mode === 'local' ? ['P1', 'P2'] : ['P1', this.mode === 'training' ? 'DUMMY' : 'CPU'];
     for (let p = 0; p < 2; p++) {
@@ -160,6 +157,13 @@ export class CharSelect implements Screen {
       drawText(ctx, def.name, tx, 34, { align: al, color: '#fff' });
       drawText(ctx, def.title.toUpperCase(), tx, 44, { align: al, color: p === 0 ? '#7ad7ff' : '#ff8ab0' });
       drawText(ctx, def.archetype.toUpperCase(), tx, 54, { align: al, color: '#aaa' });
+      const layout = this.mode === 'local' ? (p === 0 ? 'p1duo' : 'p2duo') : 'solo';
+      if (p === 0 || this.mode === 'local') {
+        moveList(this.cur[p], layout).forEach((l, k) => {
+          drawText(ctx, l.name, tx, 70 + k * 20, { align: al, color: '#ffd23e' });
+          drawText(ctx, `${l.easy}  OR  ${l.input}`, tx, 79 + k * 20, { align: al, color: '#bfe9ff' });
+        });
+      }
       if (this.locked[p]) drawText(ctx, 'READY!', p === 0 ? 70 : 410, 214, { scale: 2, align: 'center', color: '#ffd23e', outline: '#000', shadow: null });
     }
     const hint = this.mode === 'local' ? 'P1: WASD + T   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'ARROWS/WASD + ENTER   BACK: ESC';

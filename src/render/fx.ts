@@ -7,12 +7,16 @@ type Ctx = CanvasRenderingContext2D;
 
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number; g: number }
 interface Pop { x: number; y: number; text: string; color: string; life: number }
+interface Burst { x: number; y: number; life: number; max: number; size: number; rot: number; colors: [string, string, string]; ring: boolean }
+interface Puff { x: number; y: number; vx: number; r: number; life: number; max: number }
 
 const sx = (v: number) => v / FX;
 
 export class Effects {
   parts: Particle[] = [];
   pops: Pop[] = [];
+  bursts: Burst[] = [];
+  puffs: Puff[] = [];
   shake = 0;
   flash = 0;
   flashColor = '#fff';
@@ -26,6 +30,18 @@ export class Effects {
     }
   }
 
+  spark(x: number, y: number, size: number, colors: [string, string, string], ring = true): void {
+    const life = 9 + Math.round(size / 6);
+    this.bursts.push({ x, y, life, max: life, size, rot: Math.random() * Math.PI, colors, ring });
+  }
+
+  dust(x: number, y: number, n: number): void {
+    for (let i = 0; i < n; i++) {
+      const life = 18 + Math.floor(Math.random() * 10);
+      this.puffs.push({ x: x + (Math.random() - 0.5) * 16, y: y - 2, vx: (Math.random() - 0.5) * 1.6, r: 2 + Math.random() * 3, life, max: life });
+    }
+  }
+
   pop(x: number, y: number, text: string, color: string): void {
     this.pops.push({ x, y, text, color, life: 50 });
   }
@@ -35,14 +51,17 @@ export class Effects {
     const y = e.y !== undefined ? GROUND_Y - sx(e.y) : 0;
     switch (e.t) {
       case 'hit':
+        this.spark(x, y, e.k === 2 ? 30 : e.k === 1 ? 22 : 13, e.k === 2 ? ['#ffffff', '#ff6ad5', '#7a2bff'] : ['#ffffff', '#ffe066', '#ff6a1a']);
         this.burst(x, y, e.k === 2 ? 26 : e.k === 1 ? 18 : 10, e.k === 2 ? ['#fff', '#ffe066', '#ff6ad5'] : ['#fff', '#ffd166', '#ff8c42'], e.k ? 4 : 3, e.k ? 3 : 2);
         this.shake = Math.max(this.shake, e.k === 2 ? 6 : e.k === 1 ? 4 : 2);
         break;
       case 'block':
+        this.spark(x, y, 12, ['#ffffff', '#9ae0ff', '#2a7aff'], false);
         this.burst(x, y, 8, ['#bfe9ff', '#5ac8fa', '#fff'], 2.5, 2, 0);
         this.shake = Math.max(this.shake, 1);
         break;
       case 'counter':
+        this.spark(x, y, 28, ['#ffffff', '#a7f3d0', '#10a37f']);
         this.burst(x, y, 24, ['#fff', '#34d399', '#a7f3d0'], 4, 3);
         this.pop(x, y - 20, 'COUNTER!', '#34d399');
         this.shake = 5;
@@ -59,7 +78,7 @@ export class Effects {
         this.burst(x, y, 16, ['#fff', '#c9b6ff'], 3, 2, 0);
         break;
       case 'knockdown':
-        this.burst(x, GROUND_Y - 2, 10, ['#a89f91', '#d8cfc0'], 1.6, 2, 0.05);
+        this.dust(x, GROUND_Y, 10);
         this.shake = Math.max(this.shake, 2);
         break;
       case 'super':
@@ -85,12 +104,54 @@ export class Effects {
     this.parts = this.parts.filter((p) => p.life > 0);
     for (const p of this.pops) { p.life--; p.y -= 0.4; }
     this.pops = this.pops.filter((p) => p.life > 0);
+    for (const b of this.bursts) b.life--;
+    this.bursts = this.bursts.filter((b) => b.life > 0);
+    for (const p of this.puffs) { p.life--; p.x += p.vx; p.y -= 0.25; p.r += 0.25; }
+    this.puffs = this.puffs.filter((p) => p.life > 0);
     this.shake *= 0.82;
     if (this.shake < 0.3) this.shake = 0;
     if (this.flash > 0) this.flash--;
   }
 
   draw(ctx: Ctx, camX: number): void {
+    for (const p of this.puffs) {
+      ctx.globalAlpha = (p.life / p.max) * 0.55;
+      ctx.fillStyle = '#d8d0c8';
+      ctx.beginPath();
+      ctx.arc(p.x - camX, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for (const b of this.bursts) {
+      const t = 1 - b.life / b.max;
+      const x = b.x - camX;
+      if (b.ring) {
+        ctx.globalAlpha = (1 - t) * 0.9;
+        ctx.strokeStyle = b.colors[1];
+        ctx.lineWidth = 2.5 * (1 - t) + 0.5;
+        ctx.beginPath();
+        ctx.ellipse(x, b.y, b.size * (0.4 + t * 1.4), b.size * (0.25 + t * 0.9), 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      const s = b.size * (t < 0.25 ? 0.6 + t * 1.6 : 1 - (t - 0.25) * 1.2);
+      if (s > 0) {
+        ctx.globalAlpha = 1;
+        for (let layer = 0; layer < 3; layer++) {
+          const r = s * [1, 0.7, 0.38][layer];
+          ctx.fillStyle = b.colors[2 - layer];
+          ctx.beginPath();
+          const spikes = 8;
+          for (let k = 0; k < spikes * 2; k++) {
+            const a = b.rot + (k / (spikes * 2)) * Math.PI * 2;
+            const rr = k % 2 ? r * 0.32 : r * (k % 4 === 0 ? 1 : 0.7);
+            ctx.lineTo(x + Math.cos(a) * rr, b.y + Math.sin(a) * rr);
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
     for (const p of this.parts) {
       ctx.globalAlpha = Math.min(1, (p.life / p.max) * 1.5);
       ctx.fillStyle = p.color;

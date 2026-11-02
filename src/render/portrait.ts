@@ -3,37 +3,41 @@ import { POSES } from './poses.ts';
 import { altLook, buildShapes } from './rig.ts';
 import { rasterize } from './raster.ts';
 
-const cache = new Map<string, HTMLCanvasElement>();
+const cache = new Map<string, { c: HTMLCanvasElement; x: number; y: number; s: number }>();
+const RES = 7;
 
-// Upper-body close-up rendered at 3x scale so it reads as a hi-res pixel portrait.
-export function portrait(char: number, alt = false, size = 64): HTMLCanvasElement {
-  const key = `${char}|${alt}|${size}`;
-  let c = cache.get(key);
-  if (c) return c;
+// Upper-body close-up rendered at high resolution so it reads as detailed pixel art.
+function source(char: number, alt: boolean) {
+  const key = `${char}|${alt}`;
+  let e = cache.get(key);
+  if (e) return e;
   const def = ROSTER[char];
   const look = alt ? altLook(def.look) : def.look;
-  const scale = 3;
-  const W = 300;
-  const H = 420;
-  const b = buildShapes(look, POSES.portrait, scale);
-  const dx = 150 - 80;
-  const dy = 410 - 146;
-  for (const s of b.shapes) {
-    if (s.k === 'cap') { s.ax += dx; s.bx += dx; s.ay += dy; s.by += dy; }
-    else if (s.k === 'ell') { s.x += dx; s.y += dy; }
-    else for (let i = 0; i < s.pts.length; i += 2) { s.pts[i] += dx; s.pts[i + 1] += dy; }
-  }
-  for (const d of b.details) { d.x += dx; d.y += dy; }
+  const W = 62 * RES;
+  const H = 120 * RES;
+  const b = buildShapes(look, POSES.portrait, RES, W / 2, H - 2 * RES);
   const r = rasterize(b.shapes, b.details, W, H);
-  c = document.createElement('canvas');
-  c.width = size;
-  c.height = size;
-  const ctx = c.getContext('2d')!;
-  ctx.imageSmoothingEnabled = false;
-  const crop = 96;
-  const hx = b.head[0] + dx;
-  const hy = b.head[1] + dy;
-  ctx.drawImage(r.canvas as CanvasImageSource, hx - crop / 2 - 6, hy - crop * 0.38, crop, crop, 0, 0, size, size);
-  cache.set(key, c);
-  return c;
+  const c = document.createElement('canvas');
+  c.width = r.w;
+  c.height = r.h;
+  c.getContext('2d')!.drawImage(r.canvas as CanvasImageSource, 0, 0);
+  const crop = 34 * RES;
+  e = { c, x: b.head[0] - r.x0 - crop * 0.55, y: b.head[1] - r.y0 - crop * 0.42, s: crop };
+  cache.set(key, e);
+  return e;
+}
+
+export function drawPortrait(ctx: CanvasRenderingContext2D, char: number, alt: boolean, x: number, y: number, size: number, flip = false): void {
+  const p = source(char, alt);
+  const smooth = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  if (flip) {
+    ctx.save();
+    ctx.translate(x + size, y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(p.c, p.x, p.y, p.s, p.s, 0, 0, size, size);
+    ctx.restore();
+  } else ctx.drawImage(p.c, p.x, p.y, p.s, p.s, x, y, size, size);
+  ctx.imageSmoothingEnabled = smooth;
 }

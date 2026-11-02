@@ -16,21 +16,25 @@ export const css = (c: RGB, a = 1) => (a >= 1 ? `rgb(${c[0]},${c[1]},${c[2]})` :
 // Little-endian packed RGBA for Uint32Array views over ImageData.
 export const pack = (c: RGB, a = 255) => ((a << 24) | (c[2] << 16) | (c[1] << 8) | c[0]) >>> 0;
 
-const LIGHT: RGB = [255, 244, 214];
-const SHADOW: RGB = [44, 26, 78];
-const INK: RGB = [18, 10, 30];
+const LIGHT: RGB = [255, 246, 222];
+const SHADOW: RGB = [40, 22, 76];
+const INK: RGB = [16, 8, 28];
 
-export interface Ramp { hi: number; base: number; lo: number; line: number; rgb: RGB }
+// Five tones per material plus an outline colour. `spec` enables the brightest tone (gloss).
+export interface Ramp { hi2: number; hi: number; base: number; lo: number; lo2: number; line: number; rgb: RGB; spec: boolean }
 
-export function ramp(h: string, back = false, gloss = 0.28): Ramp {
+export function ramp(h: string, back = false, gloss = 0.26, spec = false): Ramp {
   let base = hex(h);
-  if (back) base = mix(base, SHADOW, 0.2);
+  if (back) base = mix(base, SHADOW, 0.22);
   return {
+    hi2: pack(mix(base, LIGHT, Math.min(0.85, gloss + 0.4))),
     hi: pack(mix(base, LIGHT, gloss)),
     base: pack(base),
-    lo: pack(mix(base, SHADOW, 0.38)),
-    line: pack(mix(base, INK, 0.72)),
+    lo: pack(mix(base, SHADOW, 0.34)),
+    lo2: pack(mix(base, SHADOW, 0.6)),
+    line: pack(mix(base, INK, 0.78)),
     rgb: base,
+    spec,
   };
 }
 

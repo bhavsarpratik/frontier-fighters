@@ -3,7 +3,7 @@ import { ROSTER } from '../content/roster.ts';
 import type { Box } from '../content/types.ts';
 import { CHARS } from '../sim/data.ts';
 import { samplePose } from '../render/poses.ts';
-import { ORIGIN_X, ORIGIN_Y, poseKey, spriteFor } from '../render/rig.ts';
+import { drawSprite, poseKey, spriteFor } from '../render/rig.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const canvas = $<HTMLCanvasElement>('c');
@@ -53,9 +53,9 @@ function draw(): void {
   ctx.strokeStyle = '#3a3460';
   for (let x = 0; x < canvas.width; x += 10 * S) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
   const pose = samplePose(m.anim, f, { startup: m.startup, active: m.active, total: m.total });
-  const spr = spriteFor(`gym|${c.def.id}|${poseKey(pose)}`, c.def.look, pose);
+  const spr = spriteFor(`gym|${c.def.id}|${poseKey(pose)}`, c.def.look, pose, S);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(spr.canvas as CanvasImageSource, (GX - ORIGIN_X) * S, (GY - ORIGIN_Y) * S, spr.w * S, spr.h * S);
+  drawSprite(ctx, spr, GX * S, GY * S, false, S);
   const stroke = (b: Box, col: string) => {
     const [x, y, w, h] = boxRect(b);
     ctx.fillStyle = col + '40';

@@ -1,7 +1,7 @@
 import { playMusic } from '../audio/audio.ts';
 import { ROSTER } from '../content/roster.ts';
 import { drawText, wrap } from '../render/font.ts';
-import { portrait } from '../render/portrait.ts';
+import { drawPortrait } from '../render/portrait.ts';
 import type { SimState } from '../sim/types.ts';
 import type { MenuInput } from '../input/devices.ts';
 import { app, drawBackdrop, type Screen } from './app.ts';
@@ -83,7 +83,7 @@ export class ResultsScreen implements Screen {
     } else {
       const ch = this.winner === 0 ? this.cfg.p1 : this.cfg.p2;
       const alt = this.winner === 1 && this.cfg.p1 === this.cfg.p2;
-      ctx.drawImage(portrait(ch, alt, 112), 24, 30);
+      drawPortrait(ctx, ch, alt, 24, 30, 112);
       drawIdleFighter(ctx, ch, 380, 200, this.t, true, alt, 1.5, 'win');
       drawText(ctx, `${ROSTER[ch].short} WINS`, 150, 34, { scale: 3, gradient: ['#fff', '#ffd23e'], outline: '#000', shadow: null });
       wrap(`"${this.quote}"`, 30).forEach((l, i) => drawText(ctx, l, 150, 70 + i * 12, { color: '#fff8c0' }));

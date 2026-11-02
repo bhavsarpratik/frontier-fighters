@@ -1,7 +1,7 @@
 import { playMusic } from '../audio/audio.ts';
 import { ROSTER } from '../content/roster.ts';
 import { drawText } from '../render/font.ts';
-import { portrait } from '../render/portrait.ts';
+import { drawPortrait } from '../render/portrait.ts';
 import { app, drawBackdrop, type Screen } from './app.ts';
 import { MenuList } from './menu.ts';
 import type { MenuInput } from '../input/devices.ts';
@@ -44,7 +44,7 @@ export class TitleScreen implements Screen {
     for (let i = 0; i < n * 2; i++) {
       const x = ((i * 70 - this.t * 0.6) % (n * 140)) + (i * 70 - this.t * 0.6 < 0 ? n * 140 : 0) - 60;
       ctx.globalAlpha = 0.28;
-      ctx.drawImage(portrait(i % n, false, 64), Math.round(x), 196);
+      drawPortrait(ctx, i % n, false, Math.round(x), 196, 64);
     }
     ctx.globalAlpha = 1;
     const bob = Math.round(Math.sin(this.t / 30) * 2);
