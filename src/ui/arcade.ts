@@ -8,6 +8,7 @@ import { app, drawBackdrop, type Screen } from './app.ts';
 import { TitleScreen } from './title.ts';
 import { VsScreen } from './vs.ts';
 import { drawIdleFighter } from './select.ts';
+import { drawArt } from '../render/art.ts';
 
 export interface ArcadeRun { p1: number; ladder: number[]; idx: number; continues: number }
 
@@ -69,7 +70,7 @@ export class LadderScreen implements Screen {
       if (done) drawText(ctx, 'X', x + 13, y + 9, { scale: 2, align: 'center', color: '#ff3040', outline: '#000', shadow: null });
       drawText(ctx, ROSTER[r.ladder[i]].short, x + 36, y + 9, { color: cur ? '#fff8c0' : done ? '#555' : '#9a94b8' });
     }
-    drawIdleFighter(ctx, r.p1, 120, 236, this.t, false, false, 1.5, 'idle');
+    if (!drawArt(ctx, r.p1, 120, 240, 170, false, this.t)) drawIdleFighter(ctx, r.p1, 120, 236, this.t, false, false, 1.5, 'idle');
     drawText(ctx, ROSTER[r.p1].name, 120, 246, { align: 'center', color: '#7ad7ff', outline: '#000', shadow: null });
     const opp = ROSTER[r.ladder[r.idx]];
     wrap(`NEXT: ${opp.name}, ${opp.title.toUpperCase()}`, 34).forEach((l, i) => drawText(ctx, l, 120, 40 + i * 10, { align: 'center', color: '#ffd23e' }));
@@ -97,7 +98,7 @@ export class EndingScreen implements Screen {
     const d = ROSTER[this.run.p1];
     drawText(ctx, 'FRONTIER CONQUERED!', 240, 16, { scale: 3, align: 'center', gradient: ['#fff8c0', '#ff6a00'], outline: '#2a0040', shadow: null });
     drawPortrait(ctx, this.run.p1, false, 30, 60, 128);
-    drawIdleFighter(ctx, this.run.p1, 380, 236, this.t, true, false, 1.6, 'win');
+    if (!drawArt(ctx, this.run.p1, 380, 266, 230, true, this.t)) drawIdleFighter(ctx, this.run.p1, 380, 236, this.t, true, false, 1.6, 'win');
     const lines = [
       `${d.name} BEAT ALL ${this.run.ladder.length} RIVALS${this.run.continues ? ` WITH ${this.run.continues} CONTINUE${this.run.continues > 1 ? 'S' : ''}` : ' WITHOUT A SINGLE CONTINUE'}.`,
       `"${d.quotes[0]}"`,

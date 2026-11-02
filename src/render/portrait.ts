@@ -2,6 +2,7 @@ import { ROSTER } from '../content/roster.ts';
 import { POSES } from './poses.ts';
 import { altLook } from './rig.ts';
 import { renderToon } from './toon.ts';
+import { artFace } from './art.ts';
 
 const cache = new Map<string, { c: HTMLCanvasElement; x: number; y: number; s: number }>();
 const RES = 7;
@@ -27,6 +28,19 @@ function source(char: number, alt: boolean) {
 }
 
 export function drawPortrait(ctx: CanvasRenderingContext2D, char: number, alt: boolean, x: number, y: number, size: number, flip = false): void {
+  const face = artFace(char);
+  if (face) {
+    const smooth0 = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.save();
+    if (flip) { ctx.translate(x + size, y); ctx.scale(-1, 1); } else ctx.translate(x, y);
+    if (alt) ctx.filter = 'hue-rotate(160deg)';
+    ctx.drawImage(face, 0, 0, size, size);
+    ctx.restore();
+    ctx.imageSmoothingEnabled = smooth0;
+    return;
+  }
   const p = source(char, alt);
   const smooth = ctx.imageSmoothingEnabled;
   ctx.imageSmoothingEnabled = true;

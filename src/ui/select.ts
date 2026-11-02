@@ -13,6 +13,7 @@ import { TitleScreen } from './title.ts';
 import type { NetLink } from './netlink.ts';
 import { VsScreen } from './vs.ts';
 import { moveList } from './hints.ts';
+import { drawArt } from '../render/art.ts';
 
 export type Mode = 'cpu' | 'local' | 'training' | 'online' | 'arcade';
 
@@ -156,7 +157,9 @@ export class CharSelect implements Screen {
       if ((this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade') && p === 1 && this.phase === 0) continue;
       const def = ROSTER[this.cur[p]];
       const x = p === 0 ? 70 : 410;
-      drawIdleFighter(ctx, this.cur[p], x, 210, this.t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.6, this.locked[p] ? 'win' : 'idle');
+      if (!drawArt(ctx, this.cur[p], x + (p === 0 ? 10 : -10), 262, 228, p === 1, this.t)) {
+        drawIdleFighter(ctx, this.cur[p], x, 210, this.t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.6, this.locked[p] ? 'win' : 'idle');
+      }
       const g = ctx.createLinearGradient(p === 0 ? 0 : 480, 0, p === 0 ? 230 : 250, 0);
       g.addColorStop(0, 'rgba(6,3,18,0.86)');
       g.addColorStop(0.75, 'rgba(6,3,18,0.6)');

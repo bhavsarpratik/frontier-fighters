@@ -3,6 +3,9 @@ import { bindKeys, initMenuKeys } from './input/devices.ts';
 import { createPresenter } from './render/present.ts';
 import { app } from './ui/app.ts';
 import { TitleScreen } from './ui/title.ts';
+import { loadArt } from './render/art.ts';
+
+loadArt();
 
 const params = new URLSearchParams(location.search);
 const screenEl = document.getElementById('screen') as HTMLCanvasElement;
