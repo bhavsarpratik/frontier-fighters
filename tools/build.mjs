@@ -45,6 +45,7 @@ for (const f of await readdir(artDir).catch(() => [])) {
   await writeFile(join(root, 'dist', 'assets', 'art', f), buf);
   assets[`assets/art/${f}`] = 'data:image/webp;base64,' + buf.toString('base64');
 }
+await writeFile(join(root, 'dist', 'assets', 'art', 'manifest.json'), JSON.stringify(Object.keys(assets).map((k) => k.replace('assets/art/', ''))));
 
 // dist-single/
 const imports = {};

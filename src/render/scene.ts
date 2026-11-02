@@ -13,6 +13,8 @@ import { samplePose, type Pose } from './poses.ts';
 import { altLook, drawSprite, poseKey, spriteFor, type Sprite } from './rig.ts';
 import { drawStage, GROUND_Y, STAGE_LIGHT } from './stageArt.ts';
 import { drawPortrait } from './portrait.ts';
+import { artFull, useArt } from './art.ts';
+import { drawPuppet } from './puppet.ts';
 
 type Ctx = CanvasRenderingContext2D;
 const toS = (v: number) => v / FX;
@@ -236,6 +238,23 @@ export class MatchScene {
 
   private drawFighter(ctx: Ctx, s: SimState, i: number, cam: number, rim: [number, number, number], main: boolean): void {
     const f = s.f[i];
+    if (useArt() && artFull(f.char)) {
+      const m = f.state === S_ATTACK ? CHARS[f.char].moves[f.move] : null;
+      const ghost = main && ((!!m && (!!m.name || !!m.isSuper) && f.mf < m.startup + m.active) || f.state === S_DASH);
+      if (main && f.inv > 0 && f.state !== S_ATTACK && (this.t >> 1) % 2 === 0) ctx.globalAlpha = 0.55;
+      if (main && (f.buff > 0 || (s.freeze > 0 && s.freezeOwner === i))) {
+        ctx.save();
+        ctx.shadowColor = f.buff > 0 ? '#ff2020' : '#ffd23e';
+        ctx.shadowBlur = 12;
+        drawPuppet(ctx, f, toS(f.x) - cam, GROUND_Y - toS(f.y), this.t, { alt: this.alt[i], flash: false, ghost: false });
+        ctx.restore();
+      }
+      drawPuppet(ctx, f, toS(f.x) - cam, GROUND_Y - toS(f.y), this.t, {
+        alt: this.alt[i], ghost, flash: main && f.hitstop > 0 && (f.state === S_HITSTUN || f.state === S_AIRHIT),
+      });
+      ctx.globalAlpha = 1;
+      return;
+    }
     const def = ROSTER[f.char];
     const look = this.alt[i] ? altLook(def.look) : def.look;
     const pose = fighterPose(s, f);

@@ -14,6 +14,7 @@ import { MenuList } from './menu.ts';
 import { ResultsScreen } from './results.ts';
 import { TitleScreen } from './title.ts';
 import { CharSelect } from './select.ts';
+import { toggleArt } from '../render/art.ts';
 import { Coach, basicsLines, drawMoveList, hintsEnabled, setHints } from './hints.ts';
 import { P_INTRO } from '../sim/types.ts';
 import type { MatchConfig } from './vs.ts';
@@ -113,6 +114,7 @@ export class MatchScreen implements Screen {
       return;
     }
     if (this.fnPressed('F6')) this.toggleHints();
+    if (this.fnPressed('F7')) toggleArt();
     if (this.showMoves) {
       if (menu.some((m) => m.ok || m.back)) this.showMoves = false;
       return;

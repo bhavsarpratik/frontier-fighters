@@ -2,7 +2,7 @@
 // toon renderer for any fighter whose art is missing or still loading.
 import { ROSTER } from '../content/roster.ts';
 
-interface Art { full: HTMLImageElement | null; face: HTMLImageElement | null }
+interface Art { full: HTMLImageElement | null; face: HTMLImageElement | null; poses: Record<string, HTMLImageElement> }
 const art: Art[] = [];
 let started = false;
 
@@ -21,8 +21,32 @@ export function loadArt(): void {
   if (started || typeof Image === 'undefined') return;
   started = true;
   ROSTER.forEach((c, i) => {
-    art[i] = { full: load(`assets/art/${c.id}.webp`), face: load(`assets/art/${c.id}_face.webp`) };
+    art[i] = { full: load(`assets/art/${c.id}.webp`), face: load(`assets/art/${c.id}_face.webp`), poses: {} };
   });
+  const attach = (files: string[]) => {
+    for (const f of files) {
+      const m = /^([a-z]+)_pose_([a-z]+)\.webp$/.exec(f);
+      const i = m ? ROSTER.findIndex((c) => c.id === m[1]) : -1;
+      if (m && i >= 0) art[i].poses[m[2]] = load(`assets/art/${f}`);
+    }
+  };
+  if (window.__FF_ASSETS) attach(Object.keys(window.__FF_ASSETS).map((k) => k.replace('assets/art/', '')));
+  else fetch('assets/art/manifest.json').then((r) => (r.ok ? r.json() : [])).then(attach).catch(() => {});
+}
+
+export function artPose(char: number, name: string): HTMLImageElement | null {
+  const a = art[char]?.poses[name];
+  return ready(a) ? a : null;
+}
+
+let artMode = (() => {
+  try { return localStorage.getItem('ff-art') !== '0'; } catch { return true; }
+})();
+export const useArt = () => artMode;
+export function toggleArt(): boolean {
+  artMode = !artMode;
+  try { localStorage.setItem('ff-art', artMode ? '1' : '0'); } catch { /* ignore */ }
+  return artMode;
 }
 
 const ready = (img: HTMLImageElement | null | undefined): img is HTMLImageElement => !!img && img.complete && img.naturalWidth > 0;

@@ -112,6 +112,11 @@ def face_crop(cut: Image.Image) -> Image.Image:
     return cut.crop((x0, y0, x0 + size, y0 + size))
 
 
+def write_manifest() -> None:
+    files = sorted(p.name for p in OUT.glob("*.webp"))
+    (OUT / "manifest.json").write_text(json.dumps(files))
+
+
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     seed = 11
@@ -134,6 +139,7 @@ def main() -> None:
                 cut = cut_background(im)
                 cut.save(OUT / f"{fid}.webp", "WEBP", quality=90)
                 face_crop(cut).save(OUT / f"{fid}_face.webp", "WEBP", quality=92)
+                write_manifest()
                 print(f"{fid}: {cut.size} in {time.time() - t0:.1f}s")
                 break
             except Exception as e:  # network hiccups / queue limits
