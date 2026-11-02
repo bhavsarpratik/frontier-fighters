@@ -12,7 +12,7 @@ async function walk(dir) {
   const out = [];
   for (const e of await readdir(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...(await walk(p)));
+    if (e.isDirectory()) { if (e.name !== 'dev') out.push(...(await walk(p))); }
     else if (p.endsWith('.ts')) out.push(p);
   }
   return out;

@@ -6,7 +6,7 @@ let master: GainNode;
 let musicBus: GainNode;
 let sfxBus: GainNode;
 let noiseBuf: AudioBuffer;
-let muted = false;
+let muted = typeof location !== 'undefined' && (new URLSearchParams(location.search).has('mute') || localStorage.getItem('ff-muted') === '1');
 
 export function audioReady(): boolean {
   return !!ac;
@@ -37,6 +37,7 @@ export function unlockAudio(): void {
 
 export function toggleMute(): boolean {
   muted = !muted;
+  localStorage.setItem('ff-muted', muted ? '1' : '0');
   if (ac) master.gain.value = muted ? 0 : 0.7;
   if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
   return muted;

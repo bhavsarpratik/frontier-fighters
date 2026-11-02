@@ -12,6 +12,7 @@ export const VERSION = 'v0.1';
 
 export class TitleScreen implements Screen {
   t = 0;
+  idle = 0;
   menu = new MenuList([
     { label: 'VERSUS CPU', hint: 'FIGHT THE FRONTIER, ONE MODEL AT A TIME', act: () => app.go(new CharSelect('cpu')) },
     { label: 'VERSUS LOCAL', hint: 'TWO PLAYERS, ONE KEYBOARD (OR GAMEPADS)', act: () => app.go(new CharSelect('local')) },
@@ -26,6 +27,14 @@ export class TitleScreen implements Screen {
 
   update(m: MenuInput[]): void {
     this.t++;
+    if (m.length) this.idle = 0;
+    else if (++this.idle > 60 * 25) {
+      const n = ROSTER.length;
+      const p1 = Math.floor(Math.random() * n);
+      const p2 = (p1 + 1 + Math.floor(Math.random() * (n - 1))) % n;
+      void import('./match.ts').then((x) => app.go(new x.MatchScreen({ mode: 'cpu', p1, p2, stage: ROSTER[p2].stage, seed: (Math.random() * 1e9) >>> 0, cpu: 2, demo: true })));
+      this.idle = -1e9;
+    }
     this.menu.update(m);
   }
 

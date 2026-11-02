@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Frontier Fighters — Box Gym</title>
+<style>
+  body { margin: 0; background: #0b0717; color: #ddd; font: 13px ui-monospace, Menlo, monospace; display: flex; gap: 16px; padding: 16px; }
+  canvas { image-rendering: pixelated; background: #1a1430; cursor: crosshair; }
+  .side { width: 320px; display: flex; flex-direction: column; gap: 8px; }
+  select, input, button, textarea { font: inherit; background: #000; color: #7ad7ff; border: 1px solid #3ec8ff; padding: 4px; }
+  textarea { height: 220px; }
+  h1 { font-size: 16px; color: #ffd23e; margin: 0; }
+  .legend span { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: middle; }
+</style></head>
+<body>
+<canvas id="c" width="720" height="540"></canvas>
+<div class="side">
+  <h1>BOX GYM</h1>
+  <div>Drag the red hitbox to move it. Drag its bottom-right corner to resize it. Changes apply live to this session.</div>
+  <label>Fighter <select id="char"></select></label>
+  <label>Move <select id="move"></select></label>
+  <label>Frame <input id="frame" type="range" min="0" value="0" style="width:200px"> <span id="fl"></span></label>
+  <label><input id="play" type="checkbox"> play</label>
+  <div id="info"></div>
+  <div class="legend"><span style="background:#ff2840"></span>hitbox <span style="background:#3c8cff"></span>hurtbox <span style="background:#fff"></span>pushbox</div>
+  <button id="export">EXPORT EDITED BOXES</button>
+  <textarea id="out" readonly></textarea>
+</div>
+<script type="module" src="/src/dev/gym.ts"></script>
+</body></html>

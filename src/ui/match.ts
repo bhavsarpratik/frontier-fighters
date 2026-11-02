@@ -82,6 +82,10 @@ export class MatchScreen implements Screen {
   }
 
   update(menu: MenuInput[]): void {
+    if (this.cfg.demo && !app.autoplay && (menu.length || this.state.phase === P_MATCH_END)) {
+      app.go(new TitleScreen());
+      return;
+    }
     if (this.fnPressed('F1')) app.boxes = !app.boxes;
     const online = !!this.session;
     if (!online && menu.some((m) => m.back) && this.state.phase !== P_MATCH_END) {
@@ -156,6 +160,7 @@ export class MatchScreen implements Screen {
       this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? ['YOU', 'RIVAL'] : ['RIVAL', 'YOU'])
         : this.cfg.mode === 'cpu' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
     this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined });
+    if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
     if (training) {
       drawText(ctx, `F1 BOXES  F2 ${this.frameStep ? 'RUN' : 'PAUSE'}  F3 STEP  F4 DUMMY: ${DUMMY_MODES[this.dummyMode]}  F5 RESET`, 240, 240, { align: 'center', color: '#bfe9ff' });
       this.frameAdvantage(ctx);

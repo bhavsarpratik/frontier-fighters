@@ -9,7 +9,7 @@
   const via = q.get('via') === 'p2p' ? 'p2p' : 'bc';
   for (const [role, pick] of [['host', q.get('a') || 0], ['guest', q.get('b') || 5]]) {
     const f = document.createElement('iframe');
-    f.src = `/?${via}=${code}&role=${role}&pick=${pick}${extra}`;
+    f.src = `/?${via}=${code}&role=${role}&pick=${pick}${extra}&mute`;
     document.body.append(f);
   }
 </script>

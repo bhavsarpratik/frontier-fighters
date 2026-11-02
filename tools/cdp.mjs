@@ -11,7 +11,7 @@ const port = 9300 + Math.floor(Math.random() * 500);
 const profile = await mkdtemp(join(tmpdir(), 'ffcdp-'));
 const proc = spawn(CHROME, [
   '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, `--window-size=${w},${h}`,
-  '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', 'about:blank',
+  '--mute-audio', '--hide-scrollbars', 'about:blank',
 ], { stdio: 'ignore' });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
