@@ -1,0 +1,13 @@
+{
+  "name": "frontier-fighters",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Parody 2D fighter starring the AI frontier. Browser, P2P rollback online, zero servers.",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "build": "node tools/build.mjs",
+    "test": "node --test --disable-warning=ExperimentalWarning \"tests/**/*.test.ts\"",
+    "serve:dist": "node tools/serve.mjs dist 5174"
+  }
+}
