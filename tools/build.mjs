@@ -39,11 +39,12 @@ await writeFile(join(root, 'dist', '.nojekyll'), '');
 const assets = {};
 const artDir = join(root, 'assets', 'art');
 for (const f of await readdir(artDir).catch(() => [])) {
-  if (!f.endsWith('.webp')) continue;
+  const json = f.endsWith('_rig.json');
+  if (!f.endsWith('.webp') && !json) continue;
   const buf = await readFile(join(artDir, f));
   await mkdir(join(root, 'dist', 'assets', 'art'), { recursive: true });
   await writeFile(join(root, 'dist', 'assets', 'art', f), buf);
-  assets[`assets/art/${f}`] = 'data:image/webp;base64,' + buf.toString('base64');
+  assets[`assets/art/${f}`] = (json ? 'data:application/json;base64,' : 'data:image/webp;base64,') + buf.toString('base64');
 }
 await writeFile(join(root, 'dist', 'assets', 'art', 'manifest.json'), JSON.stringify(Object.keys(assets).map((k) => k.replace('assets/art/', ''))));
 

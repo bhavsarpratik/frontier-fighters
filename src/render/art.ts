@@ -2,7 +2,12 @@
 // toon renderer for any fighter whose art is missing or still loading.
 import { ROSTER } from '../content/roster.ts';
 
-interface Art { full: HTMLImageElement | null; face: HTMLImageElement | null; poses: Record<string, HTMLImageElement> }
+export interface RigData { w: number; h: number; joints: Record<string, [number, number]>; parts: Record<string, { x: number; y: number; w: number; h: number }> }
+interface Art {
+  full: HTMLImageElement | null; face: HTMLImageElement | null; poses: Record<string, HTMLImageElement>;
+  rig: RigData | null; parts: Record<string, HTMLImageElement>;
+}
+const PART_NAMES = ['torso', 'head', 'upper', 'fore', 'thigh', 'shin'];
 const art: Art[] = [];
 let started = false;
 
@@ -21,17 +26,33 @@ export function loadArt(): void {
   if (started || typeof Image === 'undefined') return;
   started = true;
   ROSTER.forEach((c, i) => {
-    art[i] = { full: load(`assets/art/${c.id}.webp`), face: load(`assets/art/${c.id}_face.webp`), poses: {} };
+    art[i] = { full: load(`assets/art/${c.id}.webp`), face: load(`assets/art/${c.id}_face.webp`), poses: {}, rig: null, parts: {} };
   });
   const attach = (files: string[]) => {
     for (const f of files) {
       const m = /^([a-z]+)_pose_([a-z]+)\.webp$/.exec(f);
       const i = m ? ROSTER.findIndex((c) => c.id === m[1]) : -1;
       if (m && i >= 0) art[i].poses[m[2]] = load(`assets/art/${f}`);
+      const rm = /^([a-z]+)_rig\.json$/.exec(f);
+      const ri = rm ? ROSTER.findIndex((c) => c.id === rm[1]) : -1;
+      if (rm && ri >= 0) {
+        const path = `assets/art/${f}`;
+        fetch(window.__FF_ASSETS?.[path] ?? path).then((r) => r.json()).then((rig: RigData) => {
+          art[ri].rig = rig;
+          for (const n of PART_NAMES) art[ri].parts[n] = load(`assets/art/${rm[1]}_part_${n}.webp`);
+        }).catch(() => {});
+      }
     }
   };
   if (window.__FF_ASSETS) attach(Object.keys(window.__FF_ASSETS).map((k) => k.replace('assets/art/', '')));
   else fetch('assets/art/manifest.json').then((r) => (r.ok ? r.json() : [])).then(attach).catch(() => {});
+}
+
+export function artRig(char: number): { rig: RigData; img: Record<string, HTMLImageElement> } | null {
+  const a = art[char];
+  if (!a?.rig) return null;
+  for (const n of PART_NAMES) if (!ready(a.parts[n])) return null;
+  return { rig: a.rig, img: a.parts };
 }
 
 export function artPose(char: number, name: string): HTMLImageElement | null {
