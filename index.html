@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frontier Fighters</title>
+<meta name="description" content="A parody 2D fighting game starring the AI frontier. Runs in your browser; online play is peer-to-peer.">
+<style>
+  html, body { margin: 0; height: 100%; background: #05030c; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; font-family: ui-monospace, Menlo, monospace; color: #ddd; }
+  #screen { image-rendering: pixelated; image-rendering: crisp-edges; display: block; background: #000; }
+  #overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; pointer-events: none; }
+  #overlay.on { display: flex; }
+  .panel { pointer-events: auto; background: rgba(12, 6, 30, 0.94); border: 2px solid #ff3e8a; box-shadow: 0 0 0 2px #000, 0 0 40px rgba(255, 62, 138, 0.35); padding: 18px 22px; width: min(560px, 92vw); max-height: 88vh; overflow: auto; }
+  .panel h2 { margin: 0 0 6px; color: #ffd23e; font-size: 18px; letter-spacing: 2px; }
+  .panel p { margin: 6px 0; font-size: 12px; line-height: 1.5; color: #bdb6d8; }
+  .panel .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; align-items: center; }
+  .panel button { font: inherit; font-size: 13px; background: #2a1446; color: #fff; border: 2px solid #7a5cff; padding: 7px 12px; cursor: pointer; }
+  .panel button:hover, .panel button:focus { background: #ff3e8a; border-color: #fff; outline: none; }
+  .panel button.ghost { background: transparent; border-color: #555; color: #aaa; }
+  .panel input, .panel textarea { font: inherit; font-size: 13px; background: #000; color: #7ad7ff; border: 2px solid #3ec8ff; padding: 6px 8px; }
+  .panel input { width: 9em; text-transform: uppercase; letter-spacing: 3px; }
+  .panel textarea { width: 100%; height: 80px; box-sizing: border-box; font-size: 10px; word-break: break-all; }
+  .panel .code { font-size: 28px; letter-spacing: 6px; color: #fff8c0; }
+  .panel .status { color: #7ad7ff; min-height: 1.4em; font-size: 12px; }
+  .panel .err { color: #ff6a6a; }
+  .panel details { margin-top: 8px; font-size: 12px; }
+  .panel summary { cursor: pointer; color: #aaa; }
+</style>
+</head>
+<body>
+<canvas id="screen" width="480" height="270"></canvas>
+<div id="overlay"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
