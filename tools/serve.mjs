@@ -16,8 +16,7 @@ const MIME = {
   '.png': 'image/png',
 };
 
-http
-  .createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
       if (path.endsWith('/')) path += 'index.html';
@@ -33,5 +32,13 @@ http
       res.writeHead(404, { 'content-type': 'text/plain' });
       res.end('not found');
     }
-  })
-  .listen(port, () => console.log(`Frontier Fighters dev server: http://localhost:${port}/`));
+});
+
+let tryPort = port;
+server.on('error', (e) => {
+  if (e.code !== 'EADDRINUSE' || tryPort > port + 20) throw e;
+  console.log(`Port ${tryPort} is busy, trying ${tryPort + 1}...`);
+  server.listen(++tryPort);
+});
+server.on('listening', () => console.log(`Frontier Fighters dev server: http://localhost:${tryPort}/`));
+server.listen(tryPort);
