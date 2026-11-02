@@ -112,6 +112,65 @@ def face_crop(cut: Image.Image) -> Image.Image:
     return cut.crop((x0, y0, x0 + size, y0 + size))
 
 
+KONTEXT = "https://black-forest-labs-flux-1-kontext-dev.hf.space/gradio_api"
+POSES = {
+    "punch": "throwing a powerful straight punch forward to the right with the front arm fully extended",
+    "kick": "doing a high side kick to the right with the front leg fully extended",
+    "hit": "recoiling backward from a hit, head snapped back, wincing in pain",
+    "crouch": "crouching low in a fighting stance, knees deeply bent",
+    "win": "victory pose, one fist raised high in celebration, big grin",
+    "special": "unleashing a special energy attack forward with both hands, glowing effects",
+}
+
+
+def upload(path: Path) -> dict:
+    boundary = "----ffboundary"
+    data = path.read_bytes()
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"files\"; filename=\"{path.name}\"\r\n"
+            f"Content-Type: image/png\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
+    req = urllib.request.Request(f"{KONTEXT}/upload", data=body, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    remote = json.load(urllib.request.urlopen(req, timeout=120))[0]
+    return {"path": remote, "meta": {"_type": "gradio.FileData"}}
+
+
+def call_kontext(src: Path, instruction: str, seed: int) -> Image.Image:
+    img = upload(src)
+    body = json.dumps({"data": [img, instruction, seed, False, 2.5, 28]}).encode()
+    req = urllib.request.Request(f"{KONTEXT}/call/infer", data=body, headers={"Content-Type": "application/json"})
+    event = json.load(urllib.request.urlopen(req, timeout=60))["event_id"]
+    with urllib.request.urlopen(f"{KONTEXT}/call/infer/{event}", timeout=600) as r:
+        text = r.read().decode()
+    url = None
+    for line in text.splitlines():
+        if line.startswith("data:") and "url" in line:
+            url = json.loads(line[5:])[0]["url"]
+    if not url:
+        raise RuntimeError(f"kontext failed: {text[-200:]}")
+    return Image.open(BytesIO(urllib.request.urlopen(url, timeout=60).read())).convert("RGB")
+
+
+def gen_poses(ids, seed):
+    for fid in ids:
+        src = OUT / f"{fid}_raw.png"
+        if not src.exists():
+            continue
+        for pose, desc in POSES.items():
+            out = OUT / f"{fid}_pose_{pose}.webp"
+            if out.exists():
+                continue
+            try:
+                t0 = time.time()
+                im = call_kontext(src, f"Keep exactly the same character, face, outfit, colors and art style. Change only the pose: {desc}. "
+                                       "Full body visible, side view facing right, plain flat pure white background.", seed)
+                cut_background(im).save(out, "WEBP", quality=90)
+                write_manifest()
+                print(f"{fid}_{pose}: ok in {time.time() - t0:.1f}s")
+            except Exception as e:
+                print(f"{fid}_{pose}: failed: {e}")
+                return False
+    return True
+
+
 def write_manifest() -> None:
     files = sorted(p.name for p in OUT.glob("*.webp"))
     (OUT / "manifest.json").write_text(json.dumps(files))
@@ -124,6 +183,9 @@ def main() -> None:
         seed = int(sys.argv[sys.argv.index("--seed") + 1])
         args = [a for a in args if a != str(seed)]
     ids = args or list(FIGHTERS)
+    if "--poses" in sys.argv:
+        gen_poses([a for a in ids if a in FIGHTERS], seed)
+        return
     if "--faces" in sys.argv:
         for fid in ids:
             face_crop(Image.open(OUT / f"{fid}.webp")).save(OUT / f"{fid}_face.webp", "WEBP", quality=92)
