@@ -19,6 +19,7 @@ export interface MatchConfig {
   net?: NetLink;
   delay?: number;
   demo?: boolean;
+  arcade?: import('./arcade.ts').ArcadeRun;
 }
 
 export class VsScreen implements Screen {

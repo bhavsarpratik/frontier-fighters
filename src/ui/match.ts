@@ -1,4 +1,4 @@
-import { playEvents, playMusic, sfx } from '../audio/audio.ts';
+import { announce, playEvents, playMusic, sfx } from '../audio/audio.ts';
 import { Cpu, DUMMY_MODES, dummyInput } from '../ai/cpu.ts';
 import { ROSTER } from '../content/roster.ts';
 import { STAGES } from '../content/stages.ts';
@@ -34,6 +34,7 @@ export class MatchScreen implements Screen {
   inputLog: number[][] = [];
   netStatus = '';
   coaches: Coach[] = [];
+  private lastCombo = [0, 0];
   showMoves = false;
   private fnPrev = new Set<string>();
 
@@ -41,7 +42,7 @@ export class MatchScreen implements Screen {
     this.cfg = cfg;
     this.state = createMatch({ p1: cfg.p1, p2: cfg.p2, stage: cfg.stage, seed: cfg.seed, mode: cfg.mode === 'training' ? 'training' : 'versus' });
     this.scene = new MatchScene(cfg.stage, cfg.p1, cfg.p2);
-    if (cfg.mode === 'cpu') this.cpu = new Cpu(cfg.cpu ?? 1, cfg.seed);
+    if (cfg.mode === 'cpu' || cfg.mode === 'arcade') this.cpu = new Cpu(cfg.cpu ?? 1, cfg.seed);
     if (cfg.mode === 'training') this.cpu = new Cpu(1, cfg.seed);
     if (cfg.demo || app.autoplay) this.cpu1 = new Cpu(2, (cfg.seed ^ 0x5bd1e995) + (cfg.net?.local ?? 0));
     if (cfg.mode === 'online' && cfg.net) {
@@ -135,13 +136,24 @@ export class MatchScreen implements Screen {
       const [a0, b0] = this.localInputs();
       const a = this.cpu1 ? this.cpu1.input(this.state, 0) : a0;
       let b = b0;
-      if (this.cfg.mode === 'cpu') b = this.cpu!.input(this.state, 1);
+      if (this.cfg.mode === 'cpu' || this.cfg.mode === 'arcade') b = this.cpu!.input(this.state, 1);
       if (this.cfg.mode === 'training') b = dummyInput(this.dummyMode, this.state, 1, this.cpu!);
       step(this.state, a, b);
       if (this.cfg.mode === 'training') this.logInput(a);
       this.handleEvents(this.state.events);
     }
     this.scene.update(this.state);
+    for (let i = 0; i < 2; i++) {
+      const c = this.state.f[1 - i].combo;
+      if (c !== this.lastCombo[i]) {
+        const praise = c === 3 ? 'NICE!' : c === 5 ? 'GREAT!' : c === 7 ? 'AMAZING!' : c === 10 ? 'UNSTOPPABLE!' : '';
+        if (praise) {
+          this.scene.praise(praise, i);
+          if (c >= 5) announce(praise.replace('!', ''), 1.1);
+        }
+        this.lastCombo[i] = c;
+      }
+    }
     for (const c of this.coaches) c.update(this.state);
     if (this.state.phase === P_MATCH_END) {
       this.endT++;
@@ -182,7 +194,7 @@ export class MatchScreen implements Screen {
     const training = this.cfg.mode === 'training';
     const labels: [string, string] =
       this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? ['YOU', 'RIVAL'] : ['RIVAL', 'YOU'])
-        : this.cfg.mode === 'cpu' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
+        : this.cfg.mode === 'cpu' || this.cfg.mode === 'arcade' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
     this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined });
     if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
     if (this.coaches.length && this.state.phase === P_INTRO && this.state.round === 1 && this.coaches[0].enabled) {

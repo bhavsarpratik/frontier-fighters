@@ -14,6 +14,7 @@ export class TitleScreen implements Screen {
   t = 0;
   idle = 0;
   menu = new MenuList([
+    { label: 'ARCADE', hint: 'BEAT ALL 7 RIVALS AND THE FINAL BOSS', act: () => app.go(new CharSelect('arcade')) },
     { label: 'VERSUS CPU', hint: 'FIGHT THE FRONTIER, ONE MODEL AT A TIME', act: () => app.go(new CharSelect('cpu')) },
     { label: 'VERSUS LOCAL', hint: 'TWO PLAYERS, ONE KEYBOARD (OR GAMEPADS)', act: () => app.go(new CharSelect('local')) },
     { label: 'ONLINE', hint: 'PEER-TO-PEER ROLLBACK. NO SERVERS.', act: () => void import('./lobby.ts').then((m) => app.go(new m.LobbyScreen())) },
@@ -51,7 +52,7 @@ export class TitleScreen implements Screen {
     drawText(ctx, 'FRONTIER', 240, 34 + bob, { scale: 6, align: 'center', gradient: ['#fff8c0', '#ff6a00'], outline: '#2a0040', shadow: null });
     drawText(ctx, 'FIGHTERS', 240, 82 + bob, { scale: 6, align: 'center', gradient: ['#ffd0f0', '#ff3e8a'], outline: '#2a0040', shadow: null });
     drawText(ctx, 'THE AI FRONTIER, SETTLED WITH FISTS', 240, 130, { align: 'center', color: '#7ad7ff' });
-    this.menu.render(ctx, 240, 148, this.t, 14);
+    this.menu.render(ctx, 240, 144, this.t, 13);
     drawText(ctx, 'PARODY. NOT AFFILIATED WITH OR ENDORSED BY ANYONE DEPICTED.', 240, 258, { align: 'center', color: '#8a84a8' });
     drawText(ctx, VERSION, 474, 4, { align: 'right', color: '#555' });
     drawText(ctx, 'M MUTE  F8 CRT', 6, 4, { color: '#555' });

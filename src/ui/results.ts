@@ -26,6 +26,18 @@ export class ResultsScreen implements Screen {
     const def = ROSTER[w === 0 ? cfg.p1 : cfg.p2];
     this.quote = def.quotes[(cfg.seed >>> 3) % def.quotes.length];
     const net = cfg.net;
+    const run = cfg.arcade;
+    if (run) {
+      const won = s.matchWinner === 0;
+      this.menu = new MenuList(won
+        ? [{ label: run.idx + 1 >= run.ladder.length ? 'SEE ENDING' : 'NEXT FIGHT', act: () => {
+            run.idx++;
+            void import('./arcade.ts').then((a) => app.go(run.idx >= run.ladder.length ? new a.EndingScreen(run) : new a.LadderScreen(run)));
+          } }, { label: 'MAIN MENU', act: () => app.go(new TitleScreen()) }]
+        : [{ label: 'CONTINUE', act: () => { run.continues++; void import('./arcade.ts').then((a) => a.nextFight(run)); } },
+          { label: 'MAIN MENU', act: () => app.go(new TitleScreen()) }]);
+      return;
+    }
     this.menu = new MenuList(
       net
         ? [

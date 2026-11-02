@@ -176,8 +176,8 @@ function applyHit(s: SimState, ai: number, h: HitSpec, cx: number, cy: number, p
     d.frozen = h.freeze;
     pushApart(s, ai, h.push);
   }
-  addMeter(a, Math.floor(dmg / 5));
-  addMeter(d, Math.floor(dmg / 8));
+  addMeter(a, Math.floor(dmg / 3));
+  addMeter(d, Math.floor(dmg / 5));
   d.hitstop = h.hitstop;
   if (!proj) a.hitstop = h.hitstop;
   s.events.push({ t: 'hit', p: 1 - ai, x: cx, y: cy, k: h.isSuper ? 2 : h.heavy ? 1 : 0 });

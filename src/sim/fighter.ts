@@ -9,6 +9,7 @@ import {
 } from './types.ts';
 
 export const KD_FRAMES = 36;
+const NORMAL_RANK: Record<string, number> = { sLP: 0, cLP: 0, sLK: 1, cLK: 1, sHP: 2, cHP: 2, sHK: 3, cHK: 3 };
 export const GETUP_FRAMES = 16;
 const BUFFER_FRAMES = 6;
 const DASH_FRAMES = 16;
@@ -237,6 +238,18 @@ function runMove(s: SimState, i: number, press: number, raw: number): void {
       }
     }
   }
+  // Chain combos: a ground normal that connected can chain into any stronger normal.
+  const rank = NORMAL_RANK[m.key];
+  if (rank !== undefined && f.connected && f.mf >= m.startup && press && !isAirborne(f)) {
+    const set = isDown(f.dir) ? c.normals.c : c.normals.s;
+    for (let b = 0; b < 4; b++) {
+      const nm = c.moves[set[b]];
+      if (press & BTN_ORDER[b] && (NORMAL_RANK[nm.key] ?? -1) > rank) {
+        startMove(s, i, set[b], 0);
+        return;
+      }
+    }
+  }
   let velSet = false;
   for (const [a, b, vx, vy] of m.fvel) {
     if (f.mf >= a && f.mf <= b) {
@@ -298,7 +311,7 @@ export function updateFighter(s: SimState, i: number, rawIn: number): void {
   if (newPress) {
     f.buf |= newPress;
     f.bufT = BUFFER_FRAMES;
-  } else if (f.bufT > 0 && --f.bufT === 0) f.buf = 0;
+  } else if (f.hitstop === 0 && f.bufT > 0 && --f.bufT === 0) f.buf = 0;
   const press = newPress | (f.bufT > 0 ? f.buf : 0);
 
   const rel = numpad(raw, f.facing);

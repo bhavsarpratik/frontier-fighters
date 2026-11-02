@@ -86,6 +86,7 @@ export class MatchScene {
   stage: number;
   zoom = 1;
   ghosts: Ghost[] = [];
+  praiseText: { text: string; side: number; t: number } | null = null;
   private lastState: SimState | null = null;
 
   constructor(stage: number, p1: number, p2: number) {
@@ -110,8 +111,13 @@ export class MatchScene {
     }
   }
 
+  praise(text: string, side: number): void {
+    this.praiseText = { text, side, t: 70 };
+  }
+
   update(s: SimState): void {
     this.lastState = s;
+    if (this.praiseText && --this.praiseText.t <= 0) this.praiseText = null;
     this.t++;
     this.fx.update();
     for (let i = 0; i < 2; i++) {
@@ -418,6 +424,14 @@ export class MatchScene {
       drawText(ctx, 'TRAINING', 240, 14, { align: 'center', color: '#7ad7ff', outline: '#000', shadow: null });
     }
     this.drawAnnouncer(ctx, s);
+    if (this.praiseText) {
+      const p = this.praiseText;
+      const k = 70 - p.t;
+      const pop = k < 5 ? 1 : 0;
+      ctx.globalAlpha = Math.min(1, p.t / 12);
+      drawText(ctx, p.text, p.side === 0 ? 16 : 464, 104 - pop * 2, { scale: 2 + pop, align: p.side === 0 ? 'left' : 'right', gradient: ['#ffffff', '#ff3e8a'], outline: '#2a0040', shadow: null });
+      ctx.globalAlpha = 1;
+    }
     if (o.inputDisplay) drawInputs(ctx, o.inputDisplay);
   }
 

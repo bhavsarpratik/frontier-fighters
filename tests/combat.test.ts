@@ -110,3 +110,10 @@ test('specials come out from motions', () => {
   assert.ok(ev2.some((e) => e.t === 'proj'), 'simple-mode special button should work');
   void LEFT; void HP;
 });
+
+test('chain combos: jab into kick into heavy punch lands as one combo', () => {
+  const s = setup(36);
+  const seq = (k: number) => (k === 0 ? LP : k === 7 ? LK : k === 15 ? HP : 0);
+  run(s, 40, seq);
+  assert.ok(s.f[1].combo >= 3 || s.f[1].hp <= CHARS[KARP].def.hp - 120, `combo ${s.f[1].combo}, hp ${s.f[1].hp}`);
+});

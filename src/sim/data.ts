@@ -25,6 +25,9 @@ export interface CChar {
   dashF: number; dashB: number; h: number; w: number;
 }
 
+// Global speed multiplier: snappier movement keeps matches lively.
+const PACE = 1.18;
+
 const PRIORITY: Record<string, number> = { '623': 0, '236236': 1, '[2]8': 2, '[4]6': 3, '214': 4, '236': 5 };
 export const BTN_ORDER = [HK, HP, LK, LP];
 
@@ -62,8 +65,8 @@ function compile(def: CharacterDef): CChar {
       .map((s) => ({ motion: s.motion, mask: s.btn === 'P' ? PUNCHES : KICKS, move: need(s.move), simple: s.simple, ex: s.ex !== false }))
       .sort((a, b) => PRIORITY[a.motion] - PRIORITY[b.motion]),
     superIdx: need(def.superMove),
-    walkF: px(def.walkF), walkB: px(def.walkB), jumpV: px(def.jumpV), jumpX: px(def.jumpX), g: px(def.gravity),
-    dashF: px(def.dashF), dashB: px(def.dashB), h: def.height, w: def.width,
+    walkF: px(def.walkF * PACE), walkB: px(def.walkB * PACE), jumpV: px(def.jumpV * 1.04), jumpX: px(def.jumpX * PACE), g: px(def.gravity * 1.08),
+    dashF: px(def.dashF * PACE), dashB: px(def.dashB * PACE), h: def.height, w: def.width,
   };
 }
 

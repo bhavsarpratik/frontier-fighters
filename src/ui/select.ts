@@ -14,7 +14,7 @@ import type { NetLink } from './netlink.ts';
 import { VsScreen } from './vs.ts';
 import { moveList } from './hints.ts';
 
-export type Mode = 'cpu' | 'local' | 'training' | 'online';
+export type Mode = 'cpu' | 'local' | 'training' | 'online' | 'arcade';
 
 const COLS = 4;
 const CELL = 50;
@@ -70,6 +70,7 @@ export class CharSelect implements Screen {
       if (this.net!.local === 0) app.go(new StageSelect('online', this.cur[0], this.cur[1], this.net));
       return;
     }
+    if (this.mode === 'arcade') return;
     app.go(new StageSelect(this.mode, this.cur[0], this.cur[1]));
   }
 
@@ -111,6 +112,10 @@ export class CharSelect implements Screen {
         this.locked[p] = true;
         sfx.confirm();
         this.net?.send({ t: 'lock', i: this.cur[p] });
+        if (this.mode === 'arcade') {
+          void import('./arcade.ts').then((a) => a.startArcade(this.cur[0]));
+          return;
+        }
         if ((this.mode === 'cpu' || this.mode === 'training') && p === 0) this.phase = 1;
         this.maybeAdvance();
       }
@@ -136,7 +141,7 @@ export class CharSelect implements Screen {
     }
     const label = this.mode === 'online' ? ['P1', 'P2'] : this.mode === 'local' ? ['P1', 'P2'] : ['P1', this.mode === 'training' ? 'DUMMY' : 'CPU'];
     for (let p = 0; p < 2; p++) {
-      if ((this.mode === 'cpu' || this.mode === 'training') && p === 1 && this.phase === 0) continue;
+      if ((this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade') && p === 1 && this.phase === 0) continue;
       const i = this.cur[p];
       const x = gx + (i % COLS) * CELL;
       const y = gy + Math.floor(i / COLS) * CELL;
@@ -148,7 +153,7 @@ export class CharSelect implements Screen {
       drawText(ctx, label[p], x + (p === 0 ? 3 : CELL - 3), y + CELL - 10, { align: p === 0 ? 'left' : 'right', color: col, outline: '#000', shadow: null });
     }
     for (let p = 0; p < 2; p++) {
-      if ((this.mode === 'cpu' || this.mode === 'training') && p === 1 && this.phase === 0) continue;
+      if ((this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade') && p === 1 && this.phase === 0) continue;
       const def = ROSTER[this.cur[p]];
       const x = p === 0 ? 70 : 410;
       drawIdleFighter(ctx, this.cur[p], x, 210, this.t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.6, this.locked[p] ? 'win' : 'idle');
