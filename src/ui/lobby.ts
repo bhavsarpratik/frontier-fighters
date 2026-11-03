@@ -10,7 +10,7 @@ import { CharSelect } from './select.ts';
 import { TitleScreen, VERSION } from './title.ts';
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const newCode = () => Array.from({ length: 5 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
+const newCode = () => Array.from({ length: 8 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
 
 const h = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { cls?: string } = {}, ...kids: (Node | string)[]) => {
   const el = document.createElement(tag);
@@ -34,7 +34,7 @@ export class LobbyScreen implements Screen {
   private turn: { urls: string; username: string; credential: string } = { urls: '', username: '', credential: '' };
 
   constructor(joinCode?: string) {
-    this.joinCode = joinCode?.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    this.joinCode = joinCode?.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
   }
 
   enter(): void {
@@ -57,7 +57,7 @@ export class LobbyScreen implements Screen {
   private build(): void {
     this.status = h('div', { cls: 'status' });
     this.body = h('div');
-    const code = h('input', { placeholder: 'CODE', maxLength: 8 });
+    const code = h('input', { placeholder: 'CODE', maxLength: 12 });
     code.addEventListener('keydown', (e) => { if (e.key === 'Enter') join.click(); });
     const create = h('button', { textContent: 'CREATE ROOM' });
     const join = h('button', { textContent: 'JOIN' });
@@ -65,7 +65,7 @@ export class LobbyScreen implements Screen {
     create.onclick = () => this.connect('host', newCode());
     join.onclick = () => {
       const c = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      if (c.length < 4) return this.setStatus('Enter the code your friend shared.', true);
+      if (c.length < 8) return this.setStatus('Enter the 8-character code your friend shared.', true);
       this.connect('guest', c);
     };
     back.onclick = () => this.exit();

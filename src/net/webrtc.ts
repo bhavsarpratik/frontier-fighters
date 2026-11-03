@@ -55,7 +55,8 @@ export async function trysteroConnect(o: ConnectOpts): Promise<Transport> {
     throw new Error('Could not load the P2P library from the CDN. Check your internet connection, or use manual mode.');
   }
   o.onStatus('Looking for your opponent on public relays...');
-  const cfg: Record<string, unknown> = { appId: APP_ID };
+  // The room code doubles as the signaling password, so relay traffic is encrypted end-to-end.
+  const cfg: Record<string, unknown> = { appId: APP_ID, password: `ff-${o.code}-v1` };
   if (o.turn) cfg.turnConfig = [o.turn];
   const room = mod.joinRoom(cfg, `ff-${o.code}`);
   const ctl = room.makeAction('ctl');
