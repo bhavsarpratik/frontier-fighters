@@ -68,10 +68,17 @@ def build(fid: str) -> None:
         "shin": [{"k": "cap", "a": j["knee"], "b": j["ankle"], "r": leg["rShin"]}, {"k": "cap", "a": j["heel"], "b": j["toe"], "r": leg["rFoot"]}],
         "head": [{"k": "poly", "pts": rig["head"]}],
     }
+    if rig.get("twoSided"):
+        shapes["upper2"] = [{"k": "cap", "a": j["shoulder2"], "b": j["elbow2"], "r": arm["rUpper"]}]
+        shapes["fore2"] = [{"k": "cap", "a": j["elbow2"], "b": j["fist2"], "r": arm["rFore"]}, {"k": "circle", "c": j["fist2"], "r": arm["rFist"]}]
+        shapes["thigh2"] = [{"k": "cap", "a": j["hip2"], "b": j["knee2"], "r": leg["rThigh"]}]
+        shapes["shin2"] = [{"k": "cap", "a": j["knee2"], "b": j["ankle2"], "r": leg["rShin"]}, {"k": "cap", "a": j["heel2"], "b": j["toe2"], "r": leg["rFoot"]}]
     masks = {k: mask_of(size, v) for k, v in shapes.items()}
     torso_m = mask_of(size, [{"k": "poly", "pts": rig["torso"]}])
     # remove the front arm from the torso and patch the hole with the shirt colour
     arm_m = ImageChops.lighter(masks["upper"], masks["fore"])
+    if rig.get("twoSided"):
+        arm_m = ImageChops.lighter(arm_m, ImageChops.lighter(masks["upper2"], masks["fore2"]))
     if rig.get("erase"):
         arm_m = ImageChops.lighter(arm_m, mask_of(size, rig["erase"]))
     hole = ImageChops.multiply(torso_m, arm_m.point(lambda v: 255 if v > 20 else 0).filter(ImageFilter.MaxFilter(rig.get("holeGrow", 11))))
@@ -95,7 +102,9 @@ def build(fid: str) -> None:
             if abs(r - fr) + abs(g - fg) + abs(b - fb) < tol:
                 kp[x, y] = 0
     masks["fore"] = ImageChops.multiply(masks["fore"], keep.filter(ImageFilter.MinFilter(3)))
-    for k in ("upper", "fore", "thigh", "shin", "head"):
+    if "fore2" in masks:
+        masks["fore2"] = ImageChops.multiply(masks["fore2"], keep.filter(ImageFilter.MinFilter(3)))
+    for k in [n for n in ("upper", "fore", "thigh", "shin", "head", "upper2", "fore2", "thigh2", "shin2") if n in masks]:
         parts[k] = extract(img, masks[k])
     for k, (p, off) in parts.items():
         p.save(ART / f"{fid}_part_{k}.webp", "WEBP", quality=92)

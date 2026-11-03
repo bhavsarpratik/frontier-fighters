@@ -8,6 +8,7 @@ interface Art {
   rig: RigData | null; parts: Record<string, HTMLImageElement>;
 }
 const PART_NAMES = ['torso', 'head', 'upper', 'fore', 'thigh', 'shin'];
+const PART_NAMES2 = ['upper2', 'fore2', 'thigh2', 'shin2'];
 const art: Art[] = [];
 let started = false;
 
@@ -40,6 +41,7 @@ export function loadArt(): void {
         fetch(window.__FF_ASSETS?.[path] ?? path).then((r) => r.json()).then((rig: RigData) => {
           art[ri].rig = rig;
           for (const n of PART_NAMES) art[ri].parts[n] = load(`assets/art/${rm[1]}_part_${n}.webp`);
+          if (rig.parts.upper2) for (const n of PART_NAMES2) art[ri].parts[n] = load(`assets/art/${rm[1]}_part_${n}.webp`);
         }).catch(() => {});
       }
     }
@@ -52,6 +54,7 @@ export function artRig(char: number): { rig: RigData; img: Record<string, HTMLIm
   const a = art[char];
   if (!a?.rig) return null;
   for (const n of PART_NAMES) if (!ready(a.parts[n])) return null;
+  if (a.rig.parts.upper2) for (const n of PART_NAMES2) if (!ready(a.parts[n])) return null;
   return { rig: a.rig, img: a.parts };
 }
 

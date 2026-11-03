@@ -95,11 +95,26 @@ export function drawCutout(ctx: Ctx, f: FighterState, pose: Pose, x: number, y: 
     }
     ctx.restore();
   };
+  const two = !!rig.parts.upper2 && !!img.upper2;
+  const s2 = two ? {
+    upper: angOf(sub(J.elbow2, J.shoulder2)), fore: angOf(sub(J.fist2, J.elbow2)),
+    thigh: angOf(sub(J.knee2, J.hip2)), shin: angOf(sub(J.ankle2, J.knee2)),
+  } : null;
   const drawArm = (a: ReturnType<typeof arm>, dark: boolean) => {
+    if (dark && s2) {
+      part('upper2', J.shoulder2, a.s0, a.a1 - s2.upper, false);
+      part('fore2', J.elbow2, a.e, a.a2 - s2.fore, false);
+      return;
+    }
     part('upper', J.shoulder, a.s0, a.a1 - src.upper, dark);
     part('fore', J.elbow, a.e, a.a2 - src.fore, dark);
   };
   const drawLeg = (l: ReturnType<typeof leg>, dark: boolean) => {
+    if (dark && s2) {
+      part('thigh2', J.hip2, l.h0, l.a1 - s2.thigh, false);
+      part('shin2', J.knee2, l.kn, l.a2 - s2.shin, false);
+      return;
+    }
     part('thigh', J.hip, l.h0, l.a1 - src.thigh, dark);
     part('shin', J.knee, l.kn, l.a2 - src.shin, dark);
   };
