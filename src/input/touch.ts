@@ -28,9 +28,10 @@ let tap: [number, number] | null = null;
 
 export const takeTap = (): [number, number] | null => tap;
 
-const FIGHT_BTNS: [string, number, string][] = [
-  ['HP', HP, 'p'], ['HK', HK, 'k'], ['SUPER', SUPER, 'su'],
-  ['P', LP, 'p'], ['K', LK, 'k'], ['SP', SP, 'sp'],
+// Gamepad-style diamond (matches readPad: X=P, Y=HP, B=HK, A=K) with SP/SUPER as shoulders.
+const FIGHT_BTNS: [string, number, string, string][] = [
+  ['SP', SP, 'sp', 'sp'], ['SUPER', SUPER, 'su', 'su'],
+  ['HP', HP, 'p', 'hp'], ['P', LP, 'p', 'lp'], ['HK', HK, 'k', 'hk'], ['K', LK, 'k', 'lk'],
 ];
 
 function padBits(e: PointerEvent): number {
@@ -95,10 +96,10 @@ export function initTouch(): void {
   document.body.classList.add('touch');
   root = document.createElement('div');
   root.id = 'touch';
-  const btn = (label: string, b: number, cls: string) => `<div class="tb ${cls}" data-bits="${b}"><span>${label}</span></div>`;
+  const btn = (label: string, b: number, cls: string, area = '') => `<div class="tb ${cls}" data-bits="${b}"${area ? ` style="grid-area:${area}"` : ''}><span>${label}</span></div>`;
   root.innerHTML = `
     <div class="tpad"><div class="tring"></div><div class="tknob"></div></div>
-    <div class="tbtns fight">${FIGHT_BTNS.map(([l, b, c]) => btn(l, b, c)).join('')}</div>
+    <div class="tbtns fight">${FIGHT_BTNS.map(([l, b, c, a]) => btn(l, b, c, a)).join('')}</div>
     <div class="tbtns menu">${btn('BACK', BACK, 'k')}${btn('OK', OK, 'p')}</div>
     <div class="tpause" data-bits="${PAUSE}"><span>II</span></div>`;
   document.body.appendChild(root);

@@ -42,8 +42,9 @@
   #touch .tknob { position: absolute; left: 50%; top: 50%; width: 38%; height: 38%; margin: -19% 0 0 -19%; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(122,92,255,0.55) 60%, rgba(42,20,70,0.7)); border: 2px solid rgba(255,255,255,0.55); pointer-events: none; }
   #touch .tbtns { right: calc(env(safe-area-inset-right) + 2.5vw); bottom: 6vh; display: grid; gap: calc(var(--u) * 0.16); }
-  #touch .tbtns.fight { grid-template-columns: repeat(3, var(--u)); }
-  #touch .tbtns.fight .tb:nth-child(-n+3) { transform: translateX(calc(var(--u) * -0.35)); }
+  #touch .tbtns.fight { bottom: 4vh; grid-template-columns: repeat(3, var(--u)); grid-template-rows: calc(var(--u) * 0.55) repeat(3, var(--u)); grid-template-areas: "sp . su" ". hp ." "lp . hk" ". lk ."; gap: calc(var(--u) * 0.08) calc(var(--u) * 0.04); }
+  #touch .tbtns.fight .tb.sp, #touch .tbtns.fight .tb.su { height: calc(var(--u) * 0.55); width: calc(var(--u) * 1.25); border-radius: 12px; justify-self: center; }
+  #touch .tbtns.fight .tb.sp span { font-size: calc(var(--u) * 0.24); }
   #touch .tbtns.menu { grid-template-columns: repeat(2, calc(var(--u) * 1.2)); }
   #touch .tbtns.menu .tb { height: calc(var(--u) * 1.2); }
   #touch .tbtns.menu .tb:last-child { transform: translateY(calc(var(--u) * -0.5)); }
@@ -55,7 +56,6 @@
   #touch .tb.su span { font-size: calc(var(--u) * 0.2); }
   #touch .tb.p { --c: #ff3e8a; } #touch .tb.k { --c: #3ec8ff; } #touch .tb.sp { --c: #ffd23e; } #touch .tb.su { --c: #ff6a00; }
   #touch .tb.on { background: color-mix(in srgb, var(--c) 75%, #fff 10%); transform: scale(0.92); }
-  #touch .tbtns.fight .tb.on:nth-child(-n+3) { transform: translateX(calc(var(--u) * -0.35)) scale(0.92); }
   #touch .tpause { top: calc(env(safe-area-inset-top) + 2vh); right: calc(env(safe-area-inset-right) + 2.5vw); width: calc(var(--u) * 0.8); height: calc(var(--u) * 0.55);
     border-radius: 10px; border: 2px solid rgba(255,255,255,0.45); background: rgba(12,6,30,0.5); display: flex; align-items: center; justify-content: center; }
   #touch .tpause.on { background: rgba(255,62,138,0.6); }
