@@ -16,13 +16,15 @@ const art: Art[] = [];
 let started = false;
 
 declare global {
-  interface Window { __FF_ASSETS?: Record<string, string> }
+  interface Window { __FF_ASSETS?: Record<string, string>; __FF_V?: string }
 }
+
+const url = (path: string) => window.__FF_ASSETS?.[path] ?? (window.__FF_V ? `${path}?v=${window.__FF_V}` : path);
 
 function load(path: string): HTMLImageElement {
   const img = new Image();
   img.decoding = 'async';
-  img.src = window.__FF_ASSETS?.[path] ?? path;
+  img.src = url(path);
   return img;
 }
 
@@ -41,7 +43,7 @@ export function loadArt(): void {
       const fi = fm ? ROSTER.findIndex((c) => c.id === fm[1]) : -1;
       if (fm && fi >= 0) {
         const path = `assets/art/${f}`;
-        fetch(window.__FF_ASSETS?.[path] ?? path).then((r) => r.json()).then((meta: Record<string, FrameMeta>) => {
+        fetch(url(path)).then((r) => r.json()).then((meta: Record<string, FrameMeta>) => {
           art[fi].frames = meta;
           for (const pose of Object.keys(meta)) art[fi].frameImg[pose] = load(`assets/art/${fm[1]}_f_${pose}.webp`);
         }).catch(() => {});
@@ -50,7 +52,7 @@ export function loadArt(): void {
       const ri = rm ? ROSTER.findIndex((c) => c.id === rm[1]) : -1;
       if (rm && ri >= 0) {
         const path = `assets/art/${f}`;
-        fetch(window.__FF_ASSETS?.[path] ?? path).then((r) => r.json()).then((rig: RigData) => {
+        fetch(url(path)).then((r) => r.json()).then((rig: RigData) => {
           art[ri].rig = rig;
           for (const n of PART_NAMES) art[ri].parts[n] = load(`assets/art/${rm[1]}_part_${n}.webp`);
           if (rig.parts.upper2) for (const n of PART_NAMES2) art[ri].parts[n] = load(`assets/art/${rm[1]}_part_${n}.webp`);
@@ -59,7 +61,7 @@ export function loadArt(): void {
     }
   };
   if (window.__FF_ASSETS) attach(Object.keys(window.__FF_ASSETS).map((k) => k.replace('assets/art/', '')));
-  else fetch('assets/art/manifest.json').then((r) => (r.ok ? r.json() : [])).then(attach).catch(() => {});
+  else fetch(url('assets/art/manifest.json')).then((r) => (r.ok ? r.json() : [])).then(attach).catch(() => {});
 }
 
 export function artFrames(char: number): FrameSet | null {

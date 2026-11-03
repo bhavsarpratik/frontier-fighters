@@ -4,6 +4,7 @@
 import { readFile, writeFile, mkdir, rm, readdir } from 'node:fs/promises';
 import { dirname, join, relative, resolve, posix } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { createHash } from 'node:crypto';
 import { stripTs, rewriteImports } from './strip.mjs';
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
@@ -27,18 +28,28 @@ for (const f of files) {
 
 const html = await readFile(join(root, 'index.html'), 'utf8');
 
+const artDir = join(root, 'assets', 'art');
+const artFiles = (await readdir(artDir).catch(() => [])).sort();
+
+// One version per build, added to every dist/ URL so browsers never mix cached files from two deploys.
+const h = createHash('sha256').update(html);
+for (const [rel, code] of modules) h.update(rel).update(code);
+for (const f of artFiles) h.update(f).update(await readFile(join(artDir, f)));
+const V = h.digest('hex').slice(0, 10);
+
 // dist/
 await rm(join(root, 'dist'), { recursive: true, force: true });
 for (const [rel, code] of modules) {
   const out = join(root, 'dist', rel.replace(/\.ts$/, '.js'));
   await mkdir(dirname(out), { recursive: true });
-  await writeFile(out, rewriteImports(code, (p) => `${p}.js`));
+  await writeFile(out, rewriteImports(code, (p) => `${p}.js?v=${V}`));
 }
-await writeFile(join(root, 'dist', 'index.html'), html.replace('/src/main.ts', './src/main.js'));
+const distHtml = html.replace('<script type="module" src="/src/main.ts"></script>', `<script>window.__FF_V='${V}'</script>\n<script type="module" src="./src/main.js?v=${V}"></script>`);
+if (distHtml === html) throw new Error('index.html entry script tag not found');
+await writeFile(join(root, 'dist', 'index.html'), distHtml);
 await writeFile(join(root, 'dist', '.nojekyll'), '');
 const assets = {};
-const artDir = join(root, 'assets', 'art');
-for (const f of await readdir(artDir).catch(() => [])) {
+for (const f of artFiles) {
   const json = f.endsWith('_rig.json') || f.endsWith('_frames.json');
   if (!f.endsWith('.webp') && !json) continue;
   const buf = await readFile(join(artDir, f));
@@ -71,4 +82,4 @@ const gz = gzipSync(Buffer.from([...modules.values()].join('\n') + html)).length
 const singleGz = gzipSync(Buffer.from(single)).length;
 console.log(`modules: ${modules.size}, js: ${(raw / 1024).toFixed(1)} KB, gzipped: ${(gz / 1024).toFixed(1)} KB`);
 console.log(`single-file: ${(single.length / 1024).toFixed(1)} KB, gzipped: ${(singleGz / 1024).toFixed(1)} KB`);
-console.log(`art assets: ${Object.keys(assets).length}`);
+console.log(`art assets: ${Object.keys(assets).length}, version: ${V}`);
