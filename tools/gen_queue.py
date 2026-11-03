@@ -6,6 +6,7 @@ Poses   -> /tmp/ffposes/<id>_<pose>.png (imported by tools/import_poses.py)
 Fictional parody characters only; descriptions never name real people.
 """
 import concurrent.futures as cf
+import shutil
 import subprocess
 import sys
 import time
@@ -29,11 +30,15 @@ NEW_KEYS = {
     "mirage": "a woman in her mid 30s with long dark brown wavy hair and sharp confident eyes, sleek black turtleneck, fitted dark trousers, black ankle boots, "
     "small silver earrings",
     "zen": "a woman in her mid 50s with a short dark bob haircut and glasses, confident smile, red blazer over a black top, black trousers, black flats",
+    "packet": "a charismatic South Asian man in his early 50s with short neat black hair graying at the temples and a warm wide smile, "
+    "navy blazer over an open-collar light blue shirt, dark trousers, brown loafers",
+    "router": "a tall broad-shouldered man in his late 50s with short neatly combed silver-gray hair, clean-shaven, friendly confident Southern grin, "
+    "charcoal gray suit jacket over a crisp white open-collar shirt, no tie, dark gray trousers, black dress shoes",
     "hassabyss": "a slim man in his late 40s with short dark hair, thoughtful smirk, navy quarter-zip sweater over a collared shirt, dark jeans, black sneakers",
 }
 
 ROSTER = ["karpathink", "codeaux", "potetron", "wangle", "altmind", "hwang", "zuckerbot", "tusk",
-          "feifei", "ngram", "hintern", "mirage", "zen", "hassabyss"]
+          "feifei", "ngram", "hintern", "mirage", "zen", "hassabyss", "packet", "router"]
 
 POSES = {
     "idle": "relaxed but ready fighting guard stance, fists up near the chin, knees slightly bent",
@@ -60,13 +65,13 @@ def log(msg: str) -> None:
     print(msg, flush=True)
 
 
-def codex(prompt: str, images: list[Path], out: Path) -> bool:
+def codex(prompt: str, images: list[Path], out: Path, cwd: "Path | None" = None) -> bool:
     args = ["codex", "exec", "--skip-git-repo-check", "-s", "workspace-write", "-m", "gpt-5.6-terra", "-c", "model_reasoning_effort=low"]
     for i in images:
         args += ["-i", str(i)]
     for attempt in range(2):
         try:
-            subprocess.run(args, input=prompt, text=True, capture_output=True, timeout=600)
+            subprocess.run(args, input=prompt, text=True, capture_output=True, timeout=600, cwd=cwd)
         except subprocess.TimeoutExpired:
             pass
         if out.exists() and out.stat().st_size > 10000:
@@ -95,14 +100,25 @@ def pose_job(fid: str, pose: str) -> str:
     out = POSES_DIR / f"{fid}_{pose}.png"
     if out.exists():
         return f"pose {fid}_{pose}: exists"
-    ref = ART / f"{fid}_raw.png"
-    if not ref.exists():
+    src_ref = ART / f"{fid}_raw.png"
+    if not src_ref.exists():
         return f"pose {fid}_{pose}: no key art yet"
+    # Each job gets a private folder: parallel Codex runs sharing one folder sometimes saved
+    # another fighter's drawing under this name.
+    job = POSES_DIR / f"job_{fid}_{pose}"
+    job.mkdir(exist_ok=True)
+    ref = job / "reference.png"
+    shutil.copy(src_ref, ref)
+    final = out
+    out = job / "out.png"
+    out.unlink(missing_ok=True)
     prompt = f"""Use your image generation tool to create ONE new image, then save it as {out} (PNG).
 Draw EXACTLY the same character as the attached reference image: same face, hair, body type, gender, outfit, colors, accessories and the same art style, line weight and cel shading.
 New pose: {POSES[pose]}. Side view facing right (three-quarter), whole body fully visible, same scale as the reference.
 Plain flat pure white background (not transparent, no gradient, no floor), single character, no shadow, no text, no extra effects except what the pose describes. Fictional parody character. Do not do anything else."""
-    ok = codex(prompt, [ref], out)
+    ok = codex(prompt, [ref], out, cwd=job)
+    if ok:
+        shutil.move(out, final)
     return f"pose {fid}_{pose}: {'ok' if ok else 'FAILED'}"
 
 

@@ -72,7 +72,7 @@ export interface Projectile {
 export interface SimEvent {
   t: 'hit' | 'block' | 'whiff' | 'jump' | 'land' | 'special' | 'super' | 'ko' | 'round' | 'fight'
     | 'win' | 'throw' | 'tech' | 'proj' | 'clash' | 'armor' | 'counter' | 'rehired' | 'timeup'
-    | 'perfect' | 'buff' | 'teleport' | 'dash' | 'knockdown';
+    | 'perfect' | 'buff' | 'teleport' | 'dash' | 'knockdown' | 'nosuper';
   p: number;
   x?: number; y?: number;
   k?: number;

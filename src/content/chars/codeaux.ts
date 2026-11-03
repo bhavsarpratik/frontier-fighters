@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const codeaux: CharacterDef = {
   id: 'codeaux',
   name: 'THIBAULT CODEAUX',
-  short: 'CODEAUX',
+  short: 'THIBAULT',
   title: 'The Codex',
   archetype: 'Rushdown',
   inspired: 'Thibault "Tibo" Sottiaux',

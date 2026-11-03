@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const ngram: CharacterDef = {
   id: 'ngram',
   name: 'ANDREW N-GRAM',
-  short: 'N-GRAM',
+  short: 'ANDREW',
   title: 'The Professor',
   archetype: 'All-rounder',
   inspired: 'Andrew Ng',

@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const karpathink: CharacterDef = {
   id: 'karpathink',
   name: 'ANDREJ KARPATHINK',
-  short: 'KARPATHINK',
+  short: 'ANDREJ',
   title: 'The Educator',
   archetype: 'All-rounder',
   inspired: 'Andrej Karpathy',

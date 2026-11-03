@@ -58,7 +58,7 @@ export function fighterPose(s: SimState, f: FighterState): Pose {
   return samplePose('idle', s.frame);
 }
 
-export interface SceneOpts { boxes?: boolean; labels?: [string, string]; hideHud?: boolean; training?: boolean; inputDisplay?: number[][] }
+export interface SceneOpts { boxes?: boolean; labels?: [string, string]; hideHud?: boolean; training?: boolean; inputDisplay?: number[][]; superKeys?: [string, string] }
 
 interface Ghost { spr: Sprite; x: number; y: number; flip: boolean; life: number; color: string }
 
@@ -113,6 +113,7 @@ export class MatchScene {
       const fx = this.lastState ? toS(this.lastState.f[Math.max(0, e.p)].x) : 240;
       if (e.t === 'rehired') this.fx.pop(fx, 120, 'FIRED? REHIRED!', '#9ad0ff');
       if (e.t === 'buff') this.fx.pop(fx, 120, 'HARDCORE MODE', '#ff5050');
+      if (e.t === 'nosuper') this.fx.pop(fx, 120, e.k ? 'SUPER ALREADY USED' : 'FILL THE METER FIRST', '#bfb8e0');
       if (e.t === 'dash' || e.t === 'jump' || e.t === 'land') this.fx.dust(fx, GROUND_Y, e.t === 'land' ? 6 : 4);
     }
   }
@@ -470,7 +471,7 @@ export class MatchScene {
       ctx.fill();
       drawText(ctx, full ? 'S' : `${lv}`, bx + 0.5, my + 0.5, { align: 'center', color: '#fff', shadow: null });
       if (f.superUsed) drawText(ctx, 'SUPER USED', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#8a84a8', outline: '#000', shadow: null });
-      else if (full && (this.t >> 4) % 2 === 0) drawText(ctx, 'SUPER READY', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#ffd23e', outline: '#000', shadow: null });
+      else if (full && (this.t >> 4) % 2 === 0) drawText(ctx, o.superKeys?.[i] ? `SUPER READY - PRESS ${o.superKeys[i]}` : 'SUPER READY', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#ffd23e', outline: '#000', shadow: null });
       const d = s.f[1 - i];
       if (d.combo >= 2 && (d.state === S_HITSTUN || d.state === S_AIRHIT || d.state === S_KNOCKDOWN)) {
         const sc = d.hitstop > 0 ? 4 : 3;

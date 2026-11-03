@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const hassabyss: CharacterDef = {
   id: 'hassabyss',
   name: 'DEMIS HASSABYSS',
-  short: 'HASSABYSS',
+  short: 'DEMIS',
   title: 'The Grandmaster',
   archetype: 'Counter / Strategist',
   inspired: 'Demis Hassabis',

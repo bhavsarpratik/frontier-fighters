@@ -1,7 +1,7 @@
 import { CHARS, BTN_ORDER, type CMove } from './data.ts';
 import { BAR, MAX_METER, MAX_SEPARATION, STAGE_MARGIN, STAGE_W, clamp, px } from './fixed.ts';
 import {
-  BUTTONS, HIST, LK, LP, PUNCHES, SP, cleanSocd, isBack, isDown, isFwd, isUp, matchMotion, numpad,
+  BUTTONS, HIST, LK, LP, PUNCHES, SP, SUPER, cleanSocd, isBack, isDown, isFwd, isUp, matchMotion, numpad,
 } from './input.ts';
 import {
   S_AIR, S_AIRHIT, S_ATTACK, S_BLOCKSTUN, S_CROUCH, S_DASH, S_GETUP, S_HITSTUN, S_IDLE, S_INTRO, S_JUMPSQUAT,
@@ -137,7 +137,7 @@ function tryAttack(s: SimState, i: number, press: number, raw: number, allow: nu
   if (!press) return false;
   const superMove = c.moves[c.superIdx];
   if (f.meter >= (superMove.cost ?? MAX_METER) && !f.superUsed) {
-    if ((press & PUNCHES && matchMotion(f.hist, f.facing, '236236')) || (press & SP && isUp(d))) {
+    if ((press & PUNCHES && matchMotion(f.hist, f.facing, '236236')) || (press & SP && isUp(d)) || press & SUPER) {
       startMove(s, i, c.superIdx, 0);
       return true;
     }
@@ -314,6 +314,9 @@ export function updateFighter(s: SimState, i: number, rawIn: number): void {
     f.bufT = BUFFER_FRAMES;
   } else if (f.hitstop === 0 && f.bufT > 0 && --f.bufT === 0) f.buf = 0;
   const press = newPress | (f.bufT > 0 ? f.buf : 0);
+  if (newPress & SUPER && (f.superUsed || f.meter < (c.moves[c.superIdx].cost ?? MAX_METER))) {
+    s.events.push({ t: 'nosuper', p: i, k: f.superUsed ? 1 : 0 });
+  }
 
   const rel = numpad(raw, f.facing);
   if (isBack(rel)) f.chargeB++;

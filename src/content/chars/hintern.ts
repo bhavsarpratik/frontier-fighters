@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const hintern: CharacterDef = {
   id: 'hintern',
   name: 'GEOFFREY HINTERN',
-  short: 'HINTERN',
+  short: 'GEOFFREY',
   title: 'The Godfather',
   archetype: 'Old Master / Zoner',
   inspired: 'Geoffrey Hinton',

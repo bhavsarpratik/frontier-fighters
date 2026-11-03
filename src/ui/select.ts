@@ -68,7 +68,7 @@ export class CharSelect implements Screen {
   private maybeAdvance(): void {
     if (!this.locked[0] || !this.locked[1]) return;
     if (this.mode === 'online') {
-      if (this.net!.local === 0) app.go(new StageSelect('online', this.cur[0], this.cur[1], this.net));
+      app.go(new StageSelect('online', this.cur[0], this.cur[1], this.net));
       return;
     }
     if (this.mode === 'arcade') return;
@@ -180,13 +180,10 @@ export class CharSelect implements Screen {
       }
       if (this.locked[p]) drawText(ctx, 'READY!', p === 0 ? 70 : 410, 214, { scale: 2, align: 'center', color: '#ffd23e', outline: '#000', shadow: null });
     }
-    const hint = this.mode === 'local' ? 'P1: WASD + F   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'WASD + J (OR ENTER)   BACK: ESC';
+    const hint = this.mode === 'local' ? 'P1: WASD + F   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'ARROWS + ENTER   BACK: ESC';
     drawText(ctx, hint, 240, 260, { align: 'center', color: '#8a84a8' });
     if (this.mode === 'online' && this.locked[this.net!.local] && !this.locked[1 - this.net!.local]) {
       drawText(ctx, 'WAITING FOR OPPONENT...', 240, 30, { align: 'center', color: '#ffd23e' });
-    }
-    if (this.mode === 'online' && this.locked[0] && this.locked[1] && this.net!.local === 1) {
-      drawText(ctx, 'HOST IS PICKING THE STAGE...', 240, 30, { align: 'center', color: '#ffd23e' });
     }
   }
 }
@@ -209,12 +206,38 @@ export class StageSelect implements Screen {
     this.sel = ROSTER[p2].stage % STAGES.length;
   }
 
+  // Online: the host chooses, the guest sees the same screen and follows every move.
+  private get follower(): boolean {
+    return !!this.net && this.net.local === 1;
+  }
+
+  enter(): void {
+    const net = this.net;
+    if (!net) return;
+    net.onMsg = (m) => {
+      if (m.t === 'stagecur' && this.follower) {
+        if (m.i !== this.sel) sfx.menu();
+        this.sel = m.i;
+      }
+      if (m.t === 'go') app.go(new VsScreen({ mode: 'online', p1: m.p1, p2: m.p2, stage: m.stage, seed: m.seed, net, delay: m.delay }));
+      if (m.t === 'leave') net.closed = true;
+    };
+    if (!this.follower) net.send({ t: 'stagecur', i: this.sel });
+  }
+
   update(menu: MenuInput[]): void {
     this.t++;
-    if (app.autoplay && this.t === 30) menu = [...menu, { up: false, down: false, left: false, right: false, ok: true, back: false, who: 0 }];
+    if (this.net?.closed) {
+      app.go(new TitleScreen());
+      return;
+    }
+    if (app.autoplay && this.t === 30 && !this.follower) menu = [...menu, { up: false, down: false, left: false, right: false, ok: true, back: false, who: 0 }];
     for (const m of menu) {
+      if (this.follower && !m.back) continue;
+      const before = this.sel;
       if (m.left) { this.sel = (this.sel + STAGES.length - 1) % STAGES.length; sfx.menu(); }
       if (m.right) { this.sel = (this.sel + 1) % STAGES.length; sfx.menu(); }
+      if (this.sel !== before) this.net?.send({ t: 'stagecur', i: this.sel });
       if (this.mode === 'cpu' && (m.up || m.down)) {
         this.diff = ((this.diff + (m.up ? 1 : 2)) % 3) as Difficulty;
         sfx.menu();
@@ -252,6 +275,13 @@ export class StageSelect implements Screen {
     drawText(ctx, `< ${s.name} >`, 240, 206, { scale: 2, align: 'center', color: '#fff', outline: '#000', shadow: null });
     wrap(s.subtitle.toUpperCase(), 60).forEach((l, i) => drawText(ctx, l, 240, 228 + i * 10, { align: 'center', color: '#7ad7ff' }));
     if (this.mode === 'cpu') drawText(ctx, `CPU: ${DIFF_NAMES[this.diff]}  (UP/DOWN)`, 240, 30, { align: 'center', color: '#ffd23e' });
-    drawText(ctx, 'ENTER TO FIGHT', 240, 252, { align: 'center', color: '#8a84a8' });
+    if (this.follower) {
+      const dots = '.'.repeat(((this.t >> 4) % 3) + 1);
+      drawText(ctx, `HOST IS PICKING THE ARENA${dots}`, 240, 30, { align: 'center', color: '#ffd23e' });
+      drawText(ctx, 'YOUR SCREEN FOLLOWS THE HOST   ESC: LEAVE', 240, 252, { align: 'center', color: '#8a84a8' });
+    } else {
+      if (this.net) drawText(ctx, 'YOU PICK THE ARENA - YOUR RIVAL SEES IT LIVE', 240, 30, { align: 'center', color: '#ffd23e' });
+      drawText(ctx, '< > CHOOSE   ENTER TO FIGHT', 240, 252, { align: 'center', color: '#8a84a8' });
+    }
   }
 }

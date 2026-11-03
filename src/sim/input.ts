@@ -8,9 +8,10 @@ export const HP = 32;
 export const LK = 64;
 export const HK = 128;
 export const SP = 256;
+export const SUPER = 512;
 export const PUNCHES = LP | HP;
 export const KICKS = LK | HK;
-export const BUTTONS = LP | HP | LK | HK | SP;
+export const BUTTONS = LP | HP | LK | HK | SP | SUPER;
 
 export const HIST = 32;
 

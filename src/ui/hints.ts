@@ -4,10 +4,10 @@ import { curMove, isAirborne } from '../sim/fighter.ts';
 import { P_FIGHT, P_INTRO, S_AIR, S_ATTACK, S_BLOCKSTUN, S_HITSTUN, type SimEvent, type SimState } from '../sim/types.ts';
 import { drawText, textWidth } from '../render/font.ts';
 
-export const KEYS: Record<Layout, { LP: string; HP: string; LK: string; HK: string; SP: string; move: string; up: string; down: string }> = {
-  solo: { LP: 'J', HP: 'U', LK: 'K', HK: 'I', SP: 'L', move: 'WASD', up: 'W', down: 'S' },
-  p1duo: { LP: 'F', HP: 'R', LK: 'G', HK: 'T', SP: 'H', move: 'WASD', up: 'W', down: 'S' },
-  p2duo: { LP: 'O', HP: 'P', LK: 'L', HK: ';', SP: '.', move: 'ARROWS', up: '↑', down: '↓' },
+export const KEYS: Record<Layout, { LP: string; HP: string; LK: string; HK: string; SP: string; SU: string; move: string; up: string; down: string; fwd2: string }> = {
+  solo: { LP: 'A', HP: 'Q', LK: 'S', HK: 'E', SP: 'D', SU: 'W', move: 'ARROWS', up: '↑', down: '↓', fwd2: '→ →' },
+  p1duo: { LP: 'F', HP: 'R', LK: 'G', HK: 'T', SP: 'H', SU: 'Y', move: 'WASD', up: 'W', down: 'S', fwd2: 'D D' },
+  p2duo: { LP: 'O', HP: 'P', LK: 'L', HK: ';', SP: '.', SU: '/', move: 'ARROWS', up: '↑', down: '↓', fwd2: '→ →' },
 };
 
 const MOTION: Record<string, string> = {
@@ -27,7 +27,7 @@ export function moveList(char: number, layout: Layout): MoveLine[] {
     return { name: (m.name ?? m.key).toUpperCase(), input: `${MOTION[sp.motion]} + ${btn}`, easy: `${k.SP}${dir ? ' + ' + dir : ''}` };
   });
   const sup = c.moves[c.superIdx];
-  out.push({ name: `${(sup.name ?? 'SUPER').toUpperCase()} (FULL METER)`, input: `${MOTION['236236']} + ${k.LP}`, easy: `${k.SP} + ↑` });
+  out.push({ name: `${(sup.name ?? 'SUPER').toUpperCase()} (FULL METER, 1 PER ROUND)`, input: `${MOTION['236236']} + ${k.LP}`, easy: `${k.SU}` });
   return out;
 }
 
@@ -35,7 +35,7 @@ export function basicsLines(layout: Layout): string[] {
   const k = KEYS[layout];
   return [
     `MOVE ${k.move}   JUMP ${k.up}   CROUCH ${k.down}   BLOCK: HOLD AWAY`,
-    `${k.LP} PUNCH   ${k.LK} KICK   ${k.SP} SPECIAL   ${k.HP}/${k.HK} HEAVY   THROW ${k.LP}+${k.LK}`,
+    `${k.LP} PUNCH   ${k.LK} KICK   ${k.SP} SPECIAL   ${k.SU} SUPER   ${k.HP}/${k.HK} HEAVY   THROW ${k.LP}+${k.LK}`,
   ];
 }
 
@@ -93,7 +93,7 @@ export class Coach {
       return;
     }
     if (s.phase !== P_FIGHT) return;
-    if (me.meter >= 300 && !me.superUsed && !this.hadMeter) this.show(`SUPER READY!  ${k.SP} + ↑   (OR ${list[3].input})`, 5);
+    if (me.meter >= 300 && !me.superUsed && !this.hadMeter) this.show(`SUPER READY!  PRESS ${k.SU}   (OR ${list[3].input})`, 5);
     this.hadMeter = me.meter >= 300;
     if ((op.state === S_AIR || (op.state === S_ATTACK && isAirborne(op))) && op.vy < 0 && Math.abs(op.x - me.x) < 140 * 256) {
       const aa = c.specials.find((x) => x.motion === '623' || x.motion === '[2]8');
@@ -118,7 +118,7 @@ export class Coach {
       const fresh = [
         ...basicsLines(this.layout),
         ...list.slice(0, 3).map((l) => `TRY ${l.name}: ${l.easy}   (PRO: ${l.input})`),
-        `DASH: TAP ${this.layout === 'p2duo' ? '→ →' : 'D D'}    PAUSE + MOVE LIST: ESC`,
+        `DASH: TAP ${k.fwd2}    PAUSE + MOVE LIST: ESC`,
       ];
       this.show(fresh[this.rot++ % fresh.length], 0);
       this.cooldown = 60;

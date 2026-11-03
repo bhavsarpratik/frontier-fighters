@@ -8,7 +8,7 @@ normals.sHK = { ...normals.sHK, armor: 1, startup: 11 };
 export const hwang: CharacterDef = {
   id: 'hwang',
   name: 'JENSEN "JACKET" HWANG',
-  short: 'HWANG',
+  short: 'JENSEN',
   title: 'Leather Jacket',
   archetype: 'Heavy / Armored',
   inspired: 'Jensen Huang',

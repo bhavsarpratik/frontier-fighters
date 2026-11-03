@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const mirage: CharacterDef = {
   id: 'mirage',
   name: 'MIRA MIRAGE',
-  short: 'MIRAGE',
+  short: 'MIRA',
   title: 'The Phantom',
   archetype: 'Speed / Trickster',
   inspired: 'Mira Murati',

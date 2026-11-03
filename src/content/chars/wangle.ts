@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const wangle: CharacterDef = {
   id: 'wangle',
   name: 'ALEXANDR WANGLE',
-  short: 'WANGLE',
+  short: 'ALEXANDR',
   title: 'The Labeler',
   archetype: 'Zoner / Trapper',
   inspired: 'Alexandr Wang',

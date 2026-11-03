@@ -13,8 +13,10 @@ import { hintern } from './chars/hintern.ts';
 import { mirage } from './chars/mirage.ts';
 import { zen } from './chars/zen.ts';
 import { hassabyss } from './chars/hassabyss.ts';
+import { packet } from './chars/packet.ts';
+import { router } from './chars/router.ts';
 
 export const ROSTER: CharacterDef[] = [
   karpathink, codeaux, potetron, wangle, altmind, hwang, zuckerbot,
-  tusk, feifei, ngram, hintern, mirage, zen, hassabyss,
+  tusk, feifei, ngram, hintern, mirage, zen, hassabyss, packet, router,
 ];

@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const altmind: CharacterDef = {
   id: 'altmind',
   name: 'SAM ALTMIND',
-  short: 'ALTMIND',
+  short: 'SAM',
   title: 'The Founder',
   archetype: 'Zoner',
   inspired: 'Sam Altman',

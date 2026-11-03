@@ -6,6 +6,7 @@ import {
   S_THROWN, S_WALK, S_WIN, type FighterState,
 } from '../sim/types.ts';
 import { artFrames, type FrameSet } from './art.ts';
+import { FX } from '../sim/fixed.ts';
 import { drawSmear } from './puppet.ts';
 
 type Ctx = CanvasRenderingContext2D;
@@ -45,6 +46,8 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
   let pose = 'idle';
   let sx = 1, sy = 1, rot = 0, dx = 0, dy = 0;
   let smear: { k: number; low: boolean; up: boolean } | null = null;
+  let pivot = 0; // rotation centre as a fraction of the drawn height (0 = feet)
+  let blend: { name: string; a: number } | null = null;
   switch (f.state) {
     case S_WALK:
       pose = Math.floor(f.sf / 9) % 2 === 0 ? 'walk' : 'idle';
@@ -53,9 +56,17 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
     case S_CROUCH:
     case S_JUMPSQUAT:
     case S_LAND:
-    case S_GETUP:
       pose = 'crouch';
       break;
+    case S_GETUP: {
+      // rise out of the lying drawing into the crouch instead of popping
+      pose = 'crouch';
+      const p = Math.min(1, f.sf / 10);
+      blend = { name: 'knockdown', a: 1 - p };
+      dy = 6 * (1 - ease(p));
+      sy = 0.9 + 0.1 * ease(p);
+      break;
+    }
     case S_AIR:
       pose = 'jump';
       rot = f.vy > 0 ? -0.04 : 0.05;
@@ -97,15 +108,40 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
       pose = f.crouchHit ? 'crouch' : 'block';
       dx = -1.5;
       break;
-    case S_AIRHIT:
     case S_THROWN:
       pose = 'hit';
-      rot = -0.35 - f.sf * 0.035;
+      rot = -0.3 - 0.4 * ease(Math.min(1, f.sf / 20));
+      pivot = 0.5;
       break;
+    case S_AIRHIT: {
+      // Recoil, tip back while rising, then fall flat with the head leading toward the floor.
+      const hgt = f.y / FX;
+      if (f.sf < 6 || f.vy > 0) {
+        pose = 'hit';
+        rot = -0.12 - 0.5 * ease(Math.min(1, f.sf / 18));
+        pivot = 0.5;
+        dx = f.sf < 6 ? -3 * (1 - f.sf / 6) : 0;
+      } else {
+        pose = 'knockdown';
+        rot = -Math.min(0.55, 0.12 + hgt / 70);
+        pivot = 0.5;
+      }
+      break;
+    }
     case S_KNOCKDOWN:
-    case S_KO:
+    case S_KO: {
       pose = 'knockdown';
+      if (f.sf < 14) {
+        // one small bounce and a squash on impact
+        const b = f.sf < 3 ? 0 : Math.sin(((f.sf - 3) / 11) * Math.PI);
+        dy = -b * 5;
+        rot = -b * 0.08;
+        pivot = 0.5;
+        sy = f.sf < 3 ? 0.9 + f.sf * 0.03 : 1;
+        sx = f.sf < 3 ? 1.04 : 1;
+      }
       break;
+    }
     case S_WIN:
       pose = 'win';
       dy = -Math.abs(Math.sin(f.sf / 8)) * 4;
@@ -124,26 +160,39 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
   if (pose === 'knockdown' && name !== 'knockdown') rot = -Math.PI / 2;
   const H = c.h * 1.18;
   const k = H / m.stand;
-  ctx.save();
-  ctx.translate(x, y);
-  if (f.facing < 0) ctx.scale(-1, 1);
-  ctx.translate(dx, dy);
-  ctx.rotate(rot);
-  ctx.scale(sx, sy);
   const smooth = ctx.imageSmoothingEnabled;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  if (opts.alt) ctx.filter = 'hue-rotate(160deg) saturate(1.15)';
-  const lift = rot <= -Math.PI / 2 + 0.01 ? -m.w * k * 0.12 : 0;
-  ctx.drawImage(img, -m.ax * k, -m.ay * k + lift, m.w * k, m.h * k);
-  if (opts.flash) {
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.globalAlpha = 0.35;
-    ctx.drawImage(img, -m.ax * k, -m.ay * k + lift, m.w * k, m.h * k);
-  }
-  ctx.filter = 'none';
+  const layer = (lname: string, alpha: number) => {
+    const im = fs.img[lname];
+    const mm = fs.meta[lname];
+    const lift = rot <= -Math.PI / 2 + 0.01 ? -mm.w * k * 0.12 : 0;
+    const py = pivot * mm.h * k;
+    ctx.save();
+    ctx.translate(x, y);
+    if (f.facing < 0) ctx.scale(-1, 1);
+    ctx.translate(dx, dy - py);
+    ctx.rotate(rot);
+    ctx.translate(0, py);
+    ctx.scale(sx, sy);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    if (opts.alt) ctx.filter = 'hue-rotate(160deg) saturate(1.15)';
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(im, -mm.ax * k, -mm.ay * k + lift, mm.w * k, mm.h * k);
+    if (opts.flash) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.35 * alpha;
+      ctx.drawImage(im, -mm.ax * k, -mm.ay * k + lift, mm.w * k, mm.h * k);
+    }
+    ctx.restore();
+  };
+  if (blend && blend.a > 0.02 && fs.img[blend.name]) {
+    const keep = { dy, sy };
+    dy = 0; sy = 1;
+    layer(blend.name, blend.a);
+    dy = keep.dy; sy = keep.sy;
+    layer(name, 1 - blend.a * 0.6);
+  } else layer(name, 1);
   ctx.imageSmoothingEnabled = smooth;
-  ctx.restore();
   if (smear) drawSmear(ctx, f, x, y, H, smear);
   return true;
 }

@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const tusk: CharacterDef = {
   id: 'tusk',
   name: 'ELAN TUSK',
-  short: 'TUSK',
+  short: 'ELAN',
   title: 'Full Send',
   archetype: 'Charge',
   inspired: 'Elon Musk',

@@ -67,6 +67,8 @@ def main() -> None:
                 continue
             im = im.crop(bbox)
             t = tune.get(fid, {}).get(pose, {})
+            if t.get("mirror"):
+                im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if pose == "knockdown":
                 k = STAND * LYING_WIDTH * t.get("scale", 1) / im.width
             else:

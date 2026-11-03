@@ -1,0 +1,22 @@
+{
+ "zuckerbot": {
+  "knockdown": {
+   "mirror": true
+  }
+ },
+ "tusk": {
+  "knockdown": {
+   "mirror": true
+  }
+ },
+ "hassabyss": {
+  "knockdown": {
+   "mirror": true
+  }
+ },
+ "router": {
+  "knockdown": {
+   "mirror": true
+  }
+ }
+}

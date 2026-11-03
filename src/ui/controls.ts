@@ -21,18 +21,18 @@ export class ControlsScreen implements Screen {
     };
     block('ONE PLAYER (CPU, TRAINING, ONLINE)', LAYOUT_HELP.solo);
     block('TWO PLAYERS, ONE KEYBOARD', [...LAYOUT_HELP.p1duo, ...LAYOUT_HELP.p2duo]);
-    block('GAMEPAD', ['X/Y PUNCH  A/B KICK  RB/RT SPECIAL  LB THROW']);
+    block('GAMEPAD', ['X/Y PUNCH  A/B KICK  RB SPECIAL  RT SUPER  LB THROW  START MENU']);
     const x = 270;
     y = 44;
     drawText(ctx, 'MOTIONS (FACING RIGHT)', x, y, { color: '#ffd23e' }); y += 11;
     for (const l of [
       'QCF  DOWN, DOWN-FWD, FWD + BTN', 'DP   FWD, DOWN, DOWN-FWD + BTN', 'QCB  DOWN, DOWN-BACK, BACK + BTN',
-      'SUPER QCF QCF + PUNCH (3 BARS)', 'CHARGE HOLD BACK 1/2 SEC, FWD',
+      'SUPER QCF QCF + PUNCH (FULL METER)', 'CHARGE HOLD BACK 1/2 SEC, FWD',
       'EX   SPECIAL WITH 2 BUTTONS (1 BAR)', 'THROW LIGHT PUNCH + LIGHT KICK', 'DASH  TAP FWD TWICE', 'BLOCK HOLD BACK (DOWN-BACK FOR LOWS)',
     ]) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
     y += 6;
     drawText(ctx, 'SIMPLE MODE', x, y, { color: '#ffd23e' }); y += 11;
-    for (const l of ['SPECIAL BTN + NEUTRAL/FWD/DOWN/BACK', 'SPECIAL BTN + UP = SUPER']) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
+    for (const l of ['SPECIAL BTN + NEUTRAL/FWD/DOWN/BACK', 'SUPER BTN = SUPER (FULL METER)', 'ONE SUPER PER ROUND', 'ESC = PAUSE MENU (ANY MODE)']) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
     drawText(ctx, 'PRESS ENTER TO GO BACK', 240, 252, { align: 'center', color: '#7ad7ff' });
   }
 }

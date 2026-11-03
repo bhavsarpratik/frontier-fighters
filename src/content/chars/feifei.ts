@@ -4,7 +4,7 @@ import type { CharacterDef } from '../types.ts';
 export const feifei: CharacterDef = {
   id: 'feifei',
   name: 'FEI-FEI PIXEL',
-  short: 'PIXEL',
+  short: 'FEI-FEI',
   title: 'The Visionary',
   archetype: 'Zoner',
   inspired: 'Fei-Fei Li',

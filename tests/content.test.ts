@@ -7,9 +7,9 @@ import { px } from '../src/sim/fixed.ts';
 import { S_ATTACK } from '../src/sim/types.ts';
 import { ANIMS } from '../src/render/poses.ts';
 
-test('roster has 14 fighters with unique ids', () => {
-  assert.equal(CHARS.length, 14);
-  assert.equal(new Set(CHARS.map((c) => c.def.id)).size, 14);
+test('roster has 16 fighters with unique ids', () => {
+  assert.equal(CHARS.length, 16);
+  assert.equal(new Set(CHARS.map((c) => c.def.id)).size, 16);
 });
 
 test('every move has sane frame data and a known animation', () => {

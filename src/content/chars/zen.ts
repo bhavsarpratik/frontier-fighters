@@ -7,7 +7,7 @@ normals.sHK = { ...normals.sHK, armor: 1 };
 export const zen: CharacterDef = {
   id: 'zen',
   name: 'LISA ZEN',
-  short: 'ZEN',
+  short: 'LISA',
   title: 'Core Count',
   archetype: 'Heavy Hitter',
   inspired: 'Lisa Su',

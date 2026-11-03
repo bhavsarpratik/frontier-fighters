@@ -15,7 +15,7 @@ import { ResultsScreen } from './results.ts';
 import { TitleScreen } from './title.ts';
 import { CharSelect } from './select.ts';
 import { toggleArt } from '../render/art.ts';
-import { Coach, basicsLines, drawMoveList, hintsEnabled, setHints } from './hints.ts';
+import { Coach, KEYS, basicsLines, drawMoveList, hintsEnabled, setHints } from './hints.ts';
 import { P_INTRO } from '../sim/types.ts';
 import type { MatchConfig } from './vs.ts';
 
@@ -59,13 +59,24 @@ export class MatchScreen implements Screen {
       else this.coaches = [new Coach(cfg.net?.local ?? 0, 'solo')];
       for (const c of this.coaches) c.enabled = hintsEnabled();
     }
-    this.pauseMenu = new MenuList([
-      { label: 'RESUME', act: () => { this.paused = false; } },
-      { label: 'MOVE LIST', act: () => { this.showMoves = true; } },
-      { label: 'TOGGLE HINTS', act: () => this.toggleHints() },
-      { label: 'CHARACTER SELECT', act: () => app.go(new CharSelect(cfg.mode, undefined, [cfg.p1, cfg.p2])) },
-      { label: 'MAIN MENU', act: () => app.go(new TitleScreen()) },
-    ]);
+    const leaveOnline = () => {
+      cfg.net?.close();
+      app.go(new TitleScreen());
+    };
+    this.pauseMenu = new MenuList(cfg.mode === 'online'
+      ? [
+        { label: 'RESUME', act: () => { this.paused = false; } },
+        { label: 'MOVE LIST', act: () => { this.showMoves = true; } },
+        { label: 'TOGGLE HINTS', act: () => this.toggleHints() },
+        { label: 'LEAVE MATCH', act: leaveOnline },
+      ]
+      : [
+        { label: 'RESUME', act: () => { this.paused = false; } },
+        { label: 'MOVE LIST', act: () => { this.showMoves = true; } },
+        { label: 'TOGGLE HINTS', act: () => this.toggleHints() },
+        { label: 'CHARACTER SELECT', act: () => app.go(new CharSelect(cfg.mode, undefined, [cfg.p1, cfg.p2])) },
+        { label: 'MAIN MENU', act: () => app.go(new TitleScreen()) },
+      ]);
   }
 
   enter(): void {
@@ -110,20 +121,27 @@ export class MatchScreen implements Screen {
     }
     if (this.fnPressed('F1')) app.boxes = !app.boxes;
     const online = !!this.session;
-    if (!online && menu.some((m) => m.back) && this.state.phase !== P_MATCH_END) {
-      this.paused = !this.paused;
+    if (menu.some((m) => m.esc) && this.state.phase !== P_MATCH_END) {
+      if (this.showMoves) this.showMoves = false;
+      else {
+        this.paused = !this.paused;
+        this.pauseMenu.sel = 0;
+      }
       sfx.back();
-      return;
+      menu = [];
     }
     if (this.fnPressed('F6')) this.toggleHints();
     if (this.fnPressed('F7')) toggleArt();
+    // Online play can't freeze the shared clock, so the menu overlays a running match.
     if (this.showMoves) {
       if (menu.some((m) => m.ok || m.back)) this.showMoves = false;
-      return;
+      if (!online) return;
+      menu = [];
     }
     if (this.paused) {
-      this.pauseMenu.update(menu);
-      return;
+      if (menu.some((m) => m.back)) this.paused = false;
+      else this.pauseMenu.update(menu);
+      if (!online) return;
     }
     if (this.cfg.mode === 'training') {
       if (this.fnPressed('F2')) this.frameStep = !this.frameStep;
@@ -187,7 +205,7 @@ export class MatchScreen implements Screen {
       return;
     }
     const me = this.cfg.net!.local;
-    const a = this.cpu1 ? this.cpu1.input(this.state, me) : this.localInputs()[0];
+    const a = this.cpu1 ? this.cpu1.input(this.state, me) : this.paused || this.showMoves ? 0 : this.localInputs()[0];
     const r = s.tick(a);
     this.state = r.state;
     this.handleEvents(r.events);
@@ -200,7 +218,12 @@ export class MatchScreen implements Screen {
     const labels: [string, string] =
       this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? ['YOU', 'RIVAL'] : ['RIVAL', 'YOU'])
         : this.cfg.mode === 'cpu' || this.cfg.mode === 'arcade' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
-    this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined });
+    const su = (l: 'solo' | 'p1duo' | 'p2duo') => KEYS[l].SU;
+    const superKeys: [string, string] = this.cfg.demo ? ['', '']
+      : this.cfg.mode === 'local' ? [su('p1duo'), su('p2duo')]
+        : this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? [su('solo'), ''] : ['', su('solo')])
+          : [su('solo'), ''];
+    this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined, superKeys });
     if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
     if (this.coaches.length && this.state.phase === P_INTRO && this.state.round === 1 && this.coaches[0].enabled) {
       ctx.fillStyle = 'rgba(5,3,20,0.82)';
@@ -225,9 +248,10 @@ export class MatchScreen implements Screen {
     if (this.paused) {
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(0, 0, 480, 270);
-      drawText(ctx, 'PAUSED', 240, 90, { scale: 3, align: 'center', color: '#fff', outline: '#000', shadow: null });
+      drawText(ctx, this.session ? 'MENU' : 'PAUSED', 240, 90, { scale: 3, align: 'center', color: '#fff', outline: '#000', shadow: null });
       this.pauseMenu.render(ctx, 240, 124, app.frame);
-      drawText(ctx, `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}  (F6)`, 240, 200, { align: 'center', color: '#8a84a8' });
+      drawText(ctx, `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}  (F6)    ESC CLOSE`, 240, 214, { align: 'center', color: '#8a84a8' });
+      if (this.session) drawText(ctx, 'ONLINE MATCH KEEPS RUNNING', 240, 108, { align: 'center', color: '#ff8ab0' });
     }
     if (this.showMoves) {
       ctx.fillStyle = 'rgba(5,3,20,0.94)';
