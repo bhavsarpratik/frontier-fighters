@@ -31,6 +31,7 @@
   .panel details { margin-top: 8px; font-size: 12px; }
   .panel summary { cursor: pointer; color: #aaa; }
   #overlay { z-index: 20; }
+  html:has(body.touch) { touch-action: none; }
   body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
   body.touch .panel { touch-action: manipulation; -webkit-user-select: text; user-select: text; }
   #touch { position: fixed; inset: 0; z-index: 10; pointer-events: none; --u: min(16vh, 10.5vw); }

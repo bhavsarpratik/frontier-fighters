@@ -114,7 +114,14 @@ export function initTouch(): void {
   root.addEventListener('pointerup', onUp);
   root.addEventListener('pointercancel', onUp);
   root.addEventListener('contextmenu', (e) => e.preventDefault());
-  window.addEventListener('pointerdown', goFullscreen);
+  window.addEventListener('pointerup', goFullscreen);
+  // iOS Safari ignores user-scalable=no, so cancel the native gestures (double-tap and pinch zoom)
+  // everywhere except the HTML lobby panel, whose inputs and buttons need normal taps.
+  const native = (e: Event) => (e.target as Element | null)?.closest?.('.panel');
+  document.addEventListener('touchstart', (e) => { if (!native(e)) e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', (e) => { if (!native(e)) e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchend', (e) => { if (!native(e)) e.preventDefault(); }, { passive: false });
+  for (const g of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) document.addEventListener(g, (e) => e.preventDefault(), { passive: false });
   document.addEventListener('pointerdown', (e) => {
     const c = e.target as HTMLElement;
     if (c.tagName !== 'CANVAS' || mode !== 'menu') return;

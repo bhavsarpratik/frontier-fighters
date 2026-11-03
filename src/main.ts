@@ -35,6 +35,7 @@ const overlayEl = document.getElementById('overlay')!;
 const unlock = () => unlockAudio();
 window.addEventListener('keydown', unlock);
 window.addEventListener('pointerdown', unlock);
+window.addEventListener('pointerup', unlock);
 window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyM' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) toggleMute();
   if (e.code === 'F8') { presenter.crt = !presenter.crt; e.preventDefault(); }
