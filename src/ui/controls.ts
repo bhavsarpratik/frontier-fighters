@@ -1,3 +1,4 @@
+import { isTouch } from '../input/touch.ts';
 import { drawText } from '../render/font.ts';
 import { LAYOUT_HELP, type MenuInput } from '../input/devices.ts';
 import { app, drawBackdrop, type Screen } from './app.ts';
@@ -19,8 +20,13 @@ export class ControlsScreen implements Screen {
       for (const l of lines) { drawText(ctx, l, 40, y, { color: '#ddd' }); y += 10; }
       y += 4;
     };
-    block('ONE PLAYER (CPU, TRAINING, ONLINE)', LAYOUT_HELP.solo);
-    block('TWO PLAYERS, ONE KEYBOARD', [...LAYOUT_HELP.p1duo, ...LAYOUT_HELP.p2duo]);
+    if (isTouch()) {
+      block('TOUCH', ['MOVE  LEFT PAD (SLIDE FOR MOTIONS)', 'P PUNCH   K KICK   SP SPECIAL   SUPER', 'HP HEAVY PUNCH   HK HEAVY KICK', 'THROW P + K   II PAUSE (TOP RIGHT)']);
+      block('KEYBOARD', LAYOUT_HELP.solo);
+    } else {
+      block('ONE PLAYER (CPU, TRAINING, ONLINE)', LAYOUT_HELP.solo);
+      block('TWO PLAYERS, ONE KEYBOARD', [...LAYOUT_HELP.p1duo, ...LAYOUT_HELP.p2duo]);
+    }
     block('GAMEPAD', ['X/Y PUNCH  A/B KICK  RB SPECIAL  RT SUPER  LB THROW  START MENU']);
     const x = 270;
     y = 44;
@@ -32,7 +38,7 @@ export class ControlsScreen implements Screen {
     ]) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
     y += 6;
     drawText(ctx, 'SIMPLE MODE', x, y, { color: '#ffd23e' }); y += 11;
-    for (const l of ['SPECIAL BTN + NEUTRAL/FWD/DOWN/BACK', 'SUPER BTN = SUPER (FULL METER)', 'ONE SUPER PER ROUND', 'ESC = PAUSE MENU (ANY MODE)']) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
-    drawText(ctx, 'PRESS ENTER TO GO BACK', 240, 252, { align: 'center', color: '#7ad7ff' });
+    for (const l of ['SPECIAL BTN + NEUTRAL/FWD/DOWN/BACK', 'SUPER BTN = SUPER (FULL METER)', 'ONE SUPER PER ROUND', isTouch() ? 'II = PAUSE MENU (ANY MODE)' : 'ESC = PAUSE MENU (ANY MODE)']) { drawText(ctx, l, x + 6, y, { color: '#ddd' }); y += 10; }
+    drawText(ctx, isTouch() ? 'PRESS OK TO GO BACK' : 'PRESS ENTER TO GO BACK', 240, 252, { align: 'center', color: '#7ad7ff' });
   }
 }

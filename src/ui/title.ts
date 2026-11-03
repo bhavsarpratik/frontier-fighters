@@ -1,3 +1,4 @@
+import { isTouch } from '../input/touch.ts';
 import { playMusic } from '../audio/audio.ts';
 import { ROSTER } from '../content/roster.ts';
 import { drawText } from '../render/font.ts';
@@ -110,7 +111,7 @@ export class TitleScreen implements Screen {
     // bottom strip: how to play at a glance
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 254, 480, 16);
-    drawText(ctx, 'ARROWS + ENTER   ESC MENU   PARODY, NOT AFFILIATED', 240, 258, { align: 'center', color: '#8a84a8', shadow: null });
+    drawText(ctx, isTouch() ? 'TAP A MODE   PAD + OK   PARODY, NOT AFFILIATED' : 'ARROWS + ENTER   ESC MENU   PARODY, NOT AFFILIATED', 240, 258, { align: 'center', color: '#8a84a8', shadow: null });
     drawText(ctx, VERSION, 474, 4, { align: 'right', color: '#8a84a8', outline: '#000', shadow: null });
   }
 

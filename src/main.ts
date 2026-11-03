@@ -1,5 +1,6 @@
 import { toggleMute, unlockAudio } from './audio/audio.ts';
 import { bindKeys, initMenuKeys } from './input/devices.ts';
+import { initTouch, setTouchMode } from './input/touch.ts';
 import { createPresenter } from './render/present.ts';
 import { app } from './ui/app.ts';
 import { TitleScreen } from './ui/title.ts';
@@ -18,6 +19,7 @@ ctx.imageSmoothingEnabled = false;
 
 let presenter = createPresenter(screenEl, params.has('canvas'));
 window.addEventListener('resize', () => presenter.resize());
+window.addEventListener('orientationchange', () => setTimeout(() => presenter.resize(), 200));
 screenEl.addEventListener('webglcontextlost', (e) => {
   e.preventDefault();
   const fresh = screenEl.cloneNode() as HTMLCanvasElement;
@@ -28,6 +30,8 @@ if (params.has('nocrt')) presenter.crt = false;
 
 bindKeys();
 initMenuKeys();
+initTouch();
+const overlayEl = document.getElementById('overlay')!;
 const unlock = () => unlockAudio();
 window.addEventListener('keydown', unlock);
 window.addEventListener('pointerdown', unlock);
@@ -73,6 +77,7 @@ const STEP = 1000 / 60;
 let last = performance.now();
 let acc = 0;
 function loop(now: number): void {
+  setTouchMode(overlayEl.classList.contains('on') ? 'hidden' : app.screen?.touchMode?.() ?? 'menu');
   acc += Math.min(250, now - last);
   last = now;
   let n = 0;

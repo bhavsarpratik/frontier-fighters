@@ -1,3 +1,4 @@
+import { isTouch } from '../input/touch.ts';
 import { announce, playMusic, sfx } from '../audio/audio.ts';
 import type { Difficulty } from '../ai/cpu.ts';
 import { ROSTER } from '../content/roster.ts';
@@ -74,7 +75,7 @@ export class LadderScreen implements Screen {
     drawText(ctx, ROSTER[r.p1].name, 120, 246, { align: 'center', color: '#7ad7ff', outline: '#000', shadow: null });
     const opp = ROSTER[r.ladder[r.idx]];
     wrap(`NEXT: ${opp.name}, ${opp.title.toUpperCase()}`, 34).forEach((l, i) => drawText(ctx, l, 120, 40 + i * 10, { align: 'center', color: '#ffd23e' }));
-    if ((this.t >> 4) % 2) drawText(ctx, 'PRESS ENTER', 120, 64, { align: 'center', color: '#fff' });
+    if ((this.t >> 4) % 2) drawText(ctx, isTouch() ? 'PRESS OK' : 'PRESS ENTER', 120, 64, { align: 'center', color: '#fff' });
   }
 }
 
@@ -106,6 +107,6 @@ export class EndingScreen implements Screen {
     ];
     let y = 70;
     for (const l of lines) for (const w of wrap(l, 26)) { drawText(ctx, w, 170, y, { color: '#fff' }); y += 11; }
-    if (this.t > 60 && (this.t >> 4) % 2) drawText(ctx, 'PRESS ENTER', 240, 256, { align: 'center', color: '#7ad7ff' });
+    if (this.t > 60 && (this.t >> 4) % 2) drawText(ctx, isTouch() ? 'PRESS OK' : 'PRESS ENTER', 240, 256, { align: 'center', color: '#7ad7ff' });
   }
 }

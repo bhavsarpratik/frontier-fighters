@@ -1,10 +1,12 @@
 import { pollMenu, type MenuInput } from '../input/devices.ts';
+import type { TouchMode } from '../input/touch.ts';
 
 export interface Screen {
   update(menu: MenuInput[]): void;
   render(ctx: CanvasRenderingContext2D): void;
   enter?(): void;
   leave?(): void;
+  touchMode?(): TouchMode;
 }
 
 export const app = {

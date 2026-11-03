@@ -9,6 +9,7 @@ import { createMatch, step } from '../sim/step.ts';
 import { numpad } from '../sim/input.ts';
 import { P_MATCH_END, type SimEvent, type SimState } from '../sim/types.ts';
 import { isHeld, padCount, readKeys, readPad, type MenuInput } from '../input/devices.ts';
+import { isTouch, readTouch, type TouchMode } from '../input/touch.ts';
 import { app, type Screen } from './app.ts';
 import { MenuList } from './menu.ts';
 import { ResultsScreen } from './results.ts';
@@ -55,8 +56,8 @@ export class MatchScreen implements Screen {
       };
     }
     if (!cfg.demo) {
-      if (cfg.mode === 'local') this.coaches = [new Coach(0, 'p1duo'), new Coach(1, 'p2duo')];
-      else this.coaches = [new Coach(cfg.net?.local ?? 0, 'solo')];
+      if (cfg.mode === 'local') this.coaches = [new Coach(0, isTouch() ? 'touch' : 'p1duo'), new Coach(1, 'p2duo')];
+      else this.coaches = [new Coach(cfg.net?.local ?? 0, isTouch() ? 'touch' : 'solo')];
       for (const c of this.coaches) c.enabled = hintsEnabled();
     }
     const leaveOnline = () => {
@@ -79,6 +80,10 @@ export class MatchScreen implements Screen {
       ]);
   }
 
+  touchMode(): TouchMode {
+    return this.cfg.demo || this.paused || this.showMoves || this.state.phase === P_MATCH_END ? 'menu' : 'fight';
+  }
+
   enter(): void {
     playMusic(STAGES[this.cfg.stage].music);
   }
@@ -86,11 +91,11 @@ export class MatchScreen implements Screen {
   private localInputs(): [number, number] {
     const pads = padCount();
     if (this.cfg.mode === 'local') {
-      const p1 = readKeys('p1duo') | (pads >= 2 ? readPad(0) : 0);
+      const p1 = readKeys('p1duo') | (pads >= 2 ? readPad(0) : 0) | readTouch();
       const p2 = readKeys('p2duo') | (pads >= 2 ? readPad(1) : readPad(0));
       return [p1, p2];
     }
-    return [readKeys('solo') | readPad(0), 0];
+    return [readKeys('solo') | readPad(0) | readTouch(), 0];
   }
 
   private fnPressed(code: string): boolean {
@@ -218,13 +223,13 @@ export class MatchScreen implements Screen {
     const labels: [string, string] =
       this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? ['YOU', 'RIVAL'] : ['RIVAL', 'YOU'])
         : this.cfg.mode === 'cpu' || this.cfg.mode === 'arcade' ? ['P1', 'CPU'] : training ? ['P1', 'DUMMY'] : ['P1', 'P2'];
-    const su = (l: 'solo' | 'p1duo' | 'p2duo') => KEYS[l].SU;
+    const su = (l: 'solo' | 'p1duo' | 'p2duo') => KEYS[l === 'p2duo' || !isTouch() ? l : 'touch'].SU;
     const superKeys: [string, string] = this.cfg.demo ? ['', '']
       : this.cfg.mode === 'local' ? [su('p1duo'), su('p2duo')]
         : this.cfg.mode === 'online' ? (this.cfg.net!.local === 0 ? [su('solo'), ''] : ['', su('solo')])
           : [su('solo'), ''];
     this.scene.draw(ctx, this.state, { boxes: app.boxes || (training && this.frameStep), labels, training, inputDisplay: training ? this.inputLog : undefined, superKeys });
-    if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
+    if (this.cfg.demo && !app.autoplay && (app.frame >> 5) % 2) drawText(ctx, isTouch() ? 'DEMO - TAP OK' : 'DEMO - PRESS ANY BUTTON', 240, 226, { align: 'center', color: '#fff', outline: '#000', shadow: null });
     if (this.coaches.length && this.state.phase === P_INTRO && this.state.round === 1 && this.coaches[0].enabled) {
       ctx.fillStyle = 'rgba(5,3,20,0.82)';
       ctx.fillRect(40, 168, 400, this.coaches.length * 26 + 8);
@@ -250,15 +255,15 @@ export class MatchScreen implements Screen {
       ctx.fillRect(0, 0, 480, 270);
       drawText(ctx, this.session ? 'MENU' : 'PAUSED', 240, 90, { scale: 3, align: 'center', color: '#fff', outline: '#000', shadow: null });
       this.pauseMenu.render(ctx, 240, 124, app.frame);
-      drawText(ctx, `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}  (F6)    ESC CLOSE`, 240, 214, { align: 'center', color: '#8a84a8' });
+      drawText(ctx, isTouch() ? `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}    BACK CLOSE` : `HINTS ${this.coaches[0]?.enabled ? 'ON' : 'OFF'}  (F6)    ESC CLOSE`, 240, 214, { align: 'center', color: '#8a84a8' });
       if (this.session) drawText(ctx, 'ONLINE MATCH KEEPS RUNNING', 240, 108, { align: 'center', color: '#ff8ab0' });
     }
     if (this.showMoves) {
       ctx.fillStyle = 'rgba(5,3,20,0.94)';
       ctx.fillRect(0, 0, 480, 270);
-      const cs = this.coaches.length ? this.coaches : [new Coach(0, 'solo')];
+      const cs = this.coaches.length ? this.coaches : [new Coach(0, isTouch() ? 'touch' : 'solo')];
       cs.forEach((c, i) => drawMoveList(ctx, this.state.f[c.p].char, c.layout, cs.length > 1 ? 12 + i * 236 : 120, 16, `${cs.length > 1 ? `P${c.p + 1} ` : ''}MOVE LIST`));
-      drawText(ctx, 'EASY = ONE BUTTON.  PRO = MOTION, STRONGER WITH 2 BUTTONS (EX).   ENTER TO CLOSE', 240, 256, { align: 'center', color: '#8a84a8' });
+      drawText(ctx, `EASY = ONE BUTTON.  PRO = MOTION, STRONGER WITH 2 BUTTONS (EX).   ${isTouch() ? 'OK' : 'ENTER'} TO CLOSE`, 240, 256, { align: 'center', color: '#8a84a8' });
     }
   }
 

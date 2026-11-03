@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="screen-orientation" content="landscape">
 <title>Frontier Fighters</title>
 <meta name="description" content="A parody 2D fighting game starring the AI frontier. Runs in your browser; online play is peer-to-peer.">
 <style>
@@ -26,6 +30,39 @@
   .panel .err { color: #ff6a6a; }
   .panel details { margin-top: 8px; font-size: 12px; }
   .panel summary { cursor: pointer; color: #aaa; }
+  #overlay { z-index: 20; }
+  body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  body.touch .panel { touch-action: manipulation; -webkit-user-select: text; user-select: text; }
+  #touch { position: fixed; inset: 0; z-index: 10; pointer-events: none; --u: min(16vh, 10.5vw); }
+  #touch[data-mode="hidden"] { display: none; }
+  #touch > * { pointer-events: auto; position: absolute; }
+  #touch .tpad { left: calc(env(safe-area-inset-left) + 2.5vw); bottom: 6vh; width: calc(var(--u) * 2.5); height: calc(var(--u) * 2.5); border-radius: 50%;
+    background: radial-gradient(circle, rgba(122,92,255,0.10) 0 40%, rgba(122,92,255,0.22) 70%, rgba(12,6,30,0.35) 71%); border: 2px solid rgba(122,215,255,0.45); box-shadow: 0 0 18px rgba(62,200,255,0.18) inset; }
+  #touch .tring { position: absolute; inset: 22%; border-radius: 50%; border: 1px dashed rgba(122,215,255,0.25); }
+  #touch .tknob { position: absolute; left: 50%; top: 50%; width: 38%; height: 38%; margin: -19% 0 0 -19%; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(122,92,255,0.55) 60%, rgba(42,20,70,0.7)); border: 2px solid rgba(255,255,255,0.55); pointer-events: none; }
+  #touch .tbtns { right: calc(env(safe-area-inset-right) + 2.5vw); bottom: 6vh; display: grid; gap: calc(var(--u) * 0.16); }
+  #touch .tbtns.fight { grid-template-columns: repeat(3, var(--u)); }
+  #touch .tbtns.fight .tb:nth-child(-n+3) { transform: translateX(calc(var(--u) * -0.35)); }
+  #touch .tbtns.menu { grid-template-columns: repeat(2, calc(var(--u) * 1.2)); }
+  #touch .tbtns.menu .tb { height: calc(var(--u) * 1.2); }
+  #touch .tbtns.menu .tb:last-child { transform: translateY(calc(var(--u) * -0.5)); }
+  #touch .tbtns.menu .tb span { font-size: calc(var(--u) * 0.24); }
+  #touch[data-mode="menu"] .fight, #touch[data-mode="menu"] .tpause, #touch[data-mode="fight"] .menu { display: none; }
+  #touch .tb { height: var(--u); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+    border: 2px solid var(--c); background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), color-mix(in srgb, var(--c) 30%, transparent) 65%); box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 14px color-mix(in srgb, var(--c) 35%, transparent); }
+  #touch .tb span, #touch .tpause span { font: bold calc(var(--u) * 0.3) ui-monospace, Menlo, monospace; color: #fff; text-shadow: 0 0 4px #000, 0 1px 0 #000; letter-spacing: 1px; pointer-events: none; }
+  #touch .tb.su span { font-size: calc(var(--u) * 0.2); }
+  #touch .tb.p { --c: #ff3e8a; } #touch .tb.k { --c: #3ec8ff; } #touch .tb.sp { --c: #ffd23e; } #touch .tb.su { --c: #ff6a00; }
+  #touch .tb.on { background: color-mix(in srgb, var(--c) 75%, #fff 10%); transform: scale(0.92); }
+  #touch .tbtns.fight .tb.on:nth-child(-n+3) { transform: translateX(calc(var(--u) * -0.35)) scale(0.92); }
+  #touch .tpause { top: calc(env(safe-area-inset-top) + 2vh); right: calc(env(safe-area-inset-right) + 2.5vw); width: calc(var(--u) * 0.8); height: calc(var(--u) * 0.55);
+    border-radius: 10px; border: 2px solid rgba(255,255,255,0.45); background: rgba(12,6,30,0.5); display: flex; align-items: center; justify-content: center; }
+  #touch .tpause.on { background: rgba(255,62,138,0.6); }
+  #rotate { display: none; position: fixed; inset: 0; z-index: 30; background: #05030c; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #ffd23e; font: bold 16px ui-monospace, Menlo, monospace; letter-spacing: 3px; }
+  #rotate .phone { width: 46px; height: 80px; border: 4px solid #ff3e8a; border-radius: 9px; box-shadow: 0 0 24px rgba(255,62,138,0.5); animation: ff-rot 1.8s ease-in-out infinite; }
+  @keyframes ff-rot { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) { body.touch #rotate { display: flex; } }
 </style>
 </head>
 <body>

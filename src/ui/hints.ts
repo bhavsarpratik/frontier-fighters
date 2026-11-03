@@ -1,5 +1,7 @@
 import { CHARS } from '../sim/data.ts';
-import type { Layout } from '../input/devices.ts';
+import type { Layout as KeyLayout } from '../input/devices.ts';
+
+type Layout = KeyLayout | 'touch';
 import { curMove, isAirborne } from '../sim/fighter.ts';
 import { P_FIGHT, P_INTRO, S_AIR, S_ATTACK, S_BLOCKSTUN, S_HITSTUN, type SimEvent, type SimState } from '../sim/types.ts';
 import { drawText, textWidth } from '../render/font.ts';
@@ -8,6 +10,7 @@ export const KEYS: Record<Layout, { LP: string; HP: string; LK: string; HK: stri
   solo: { LP: 'A', HP: 'Q', LK: 'S', HK: 'E', SP: 'D', SU: 'W', move: 'ARROWS', up: '↑', down: '↓', fwd2: '→ →' },
   p1duo: { LP: 'F', HP: 'R', LK: 'G', HK: 'T', SP: 'H', SU: 'Y', move: 'WASD', up: 'W', down: 'S', fwd2: 'D D' },
   p2duo: { LP: 'O', HP: 'P', LK: 'L', HK: ';', SP: '.', SU: '/', move: 'ARROWS', up: '↑', down: '↓', fwd2: '→ →' },
+  touch: { LP: 'P', HP: 'HP', LK: 'K', HK: 'HK', SP: 'SP', SU: 'SUPER', move: 'PAD', up: '↑', down: '↓', fwd2: '→ →' },
 };
 
 const MOTION: Record<string, string> = {
@@ -118,7 +121,7 @@ export class Coach {
       const fresh = [
         ...basicsLines(this.layout),
         ...list.slice(0, 3).map((l) => `TRY ${l.name}: ${l.easy}   (PRO: ${l.input})`),
-        `DASH: TAP ${k.fwd2}    PAUSE + MOVE LIST: ESC`,
+        `DASH: TAP ${k.fwd2}    PAUSE + MOVE LIST: ${this.layout === 'touch' ? 'II (TOP RIGHT)' : 'ESC'}`,
       ];
       this.show(fresh[this.rot++ % fresh.length], 0);
       this.cooldown = 60;

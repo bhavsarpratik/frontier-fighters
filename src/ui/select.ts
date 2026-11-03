@@ -1,3 +1,4 @@
+import { isTouch } from '../input/touch.ts';
 import { playMusic, sfx } from '../audio/audio.ts';
 import { ROSTER } from '../content/roster.ts';
 import { STAGES } from '../content/stages.ts';
@@ -247,7 +248,7 @@ export class CharSelect implements Screen {
       ctx.fillRect(tx, y + sz - 9, tagW, 9);
       drawText(ctx, labels[p], tx + 3, y + sz - 8, { color: '#000', shadow: null });
     }
-    const hint = this.mode === 'local' ? 'P1 F   P2 O   ESC BACK' : this.mode === 'online' ? `${this.net!.label}` : 'ENTER SELECT   ESC BACK';
+    const hint = this.mode === 'local' ? 'P1 F   P2 O   ESC BACK' : this.mode === 'online' ? `${this.net!.label}` : isTouch() ? 'PAD MOVE   OK SELECT   BACK BACK' : 'ENTER SELECT   ESC BACK';
     drawText(ctx, hint, 240, 6, { align: 'center', color: '#c8c2e8', outline: '#000', shadow: null });
   }
 }
@@ -342,10 +343,10 @@ export class StageSelect implements Screen {
     if (this.follower) {
       const dots = '.'.repeat(((this.t >> 4) % 3) + 1);
       drawText(ctx, `HOST IS PICKING THE ARENA${dots}`, 240, 30, { align: 'center', color: '#ffd23e' });
-      drawText(ctx, 'YOUR SCREEN FOLLOWS THE HOST   ESC: LEAVE', 240, 252, { align: 'center', color: '#8a84a8' });
+      drawText(ctx, isTouch() ? 'YOUR SCREEN FOLLOWS THE HOST   BACK: LEAVE' : 'YOUR SCREEN FOLLOWS THE HOST   ESC: LEAVE', 240, 252, { align: 'center', color: '#8a84a8' });
     } else {
       if (this.net) drawText(ctx, 'YOU PICK THE ARENA - YOUR RIVAL SEES IT LIVE', 240, 30, { align: 'center', color: '#ffd23e' });
-      drawText(ctx, '< > CHOOSE   ENTER TO FIGHT', 240, 252, { align: 'center', color: '#8a84a8' });
+      drawText(ctx, isTouch() ? '< > CHOOSE   OK TO FIGHT' : '< > CHOOSE   ENTER TO FIGHT', 240, 252, { align: 'center', color: '#8a84a8' });
     }
   }
 }

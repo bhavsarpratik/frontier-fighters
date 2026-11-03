@@ -1,4 +1,5 @@
 import { DOWN, HK, HP, LEFT, LK, LP, RIGHT, SP, SUPER, UP } from '../sim/input.ts';
+import { pollTouchMenu } from './touch.ts';
 
 export type Layout = 'solo' | 'p1duo' | 'p2duo';
 
@@ -125,8 +126,8 @@ export function pollMenu(): MenuInput[] {
     if (!edge) return;
     queue.push({ up: !!(edge & UP), down: !!(edge & DOWN), left: !!(edge & LEFT), right: !!(edge & RIGHT), ok: !!(edge & (1 << 12)), back: !!(edge & (1 << 13)), esc: !!(edge & (1 << 14)), who: i });
   });
-  const out = queue.splice(0);
-  return out;
+  queue.push(...pollTouchMenu());
+  return queue.splice(0);
 }
 
 export function resetPadEdges(): void {
