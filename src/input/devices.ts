@@ -5,13 +5,11 @@ export type Layout = 'solo' | 'p1duo' | 'p2duo';
 const MAPS: Record<Layout, Record<string, number>> = {
   solo: {
     KeyW: UP, KeyS: DOWN, KeyA: LEFT, KeyD: RIGHT,
-    ArrowUp: UP, ArrowDown: DOWN, ArrowLeft: LEFT, ArrowRight: RIGHT, Space: UP,
-    KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, KeyL: SP, KeyO: SP,
-    KeyZ: LP, KeyX: HP, KeyC: LK, KeyV: HK, KeyB: SP,
+    KeyJ: LP, KeyK: LK, KeyL: SP, KeyU: HP, KeyI: HK, Space: SP,
   },
   p1duo: {
     KeyW: UP, KeyS: DOWN, KeyA: LEFT, KeyD: RIGHT,
-    KeyT: LP, KeyY: HP, KeyG: LK, KeyH: HK, KeyB: SP, KeyF: SP,
+    KeyF: LP, KeyG: LK, KeyH: SP, KeyR: HP, KeyT: HK,
   },
   p2duo: {
     ArrowUp: UP, ArrowDown: DOWN, ArrowLeft: LEFT, ArrowRight: RIGHT,
@@ -21,8 +19,8 @@ const MAPS: Record<Layout, Record<string, number>> = {
 };
 
 export const LAYOUT_HELP: Record<Layout, string[]> = {
-  solo: ['MOVE  WASD / ARROWS', 'PUNCH U (LIGHT)  I (HEAVY)', 'KICK  J (LIGHT)  K (HEAVY)', 'SPECIAL L', 'ALT  Z X C V + B'],
-  p1duo: ['P1 MOVE WASD', 'PUNCH T Y   KICK G H', 'SPECIAL F OR B'],
+  solo: ['MOVE  W A S D  (W JUMP, S CROUCH)', 'J PUNCH   K KICK   L SPECIAL', 'U HEAVY PUNCH   I HEAVY KICK', 'THROW J + K   SPACE ALSO SPECIAL'],
+  p1duo: ['P1 MOVE W A S D', 'F PUNCH  G KICK  H SPECIAL', 'R HEAVY PUNCH  T HEAVY KICK'],
   p2duo: ['P2 MOVE ARROWS', 'PUNCH O P   KICK L ;', 'SPECIAL .  (OR NUMPAD 4 5 1 2 3)'],
 };
 
@@ -91,7 +89,7 @@ export interface MenuInput { up: boolean; down: boolean; left: boolean; right: b
 const MENU_KEYS: Record<string, [keyof Omit<MenuInput, 'who'>, number]> = {
   ArrowUp: ['up', 1], ArrowDown: ['down', 1], ArrowLeft: ['left', 1], ArrowRight: ['right', 1],
   KeyW: ['up', 0], KeyS: ['down', 0], KeyA: ['left', 0], KeyD: ['right', 0],
-  Enter: ['ok', 0], Space: ['ok', 0], KeyU: ['ok', 0], KeyJ: ['ok', 0], KeyT: ['ok', 0], KeyO: ['ok', 1], NumpadEnter: ['ok', 1],
+  Enter: ['ok', 0], Space: ['ok', 0], KeyJ: ['ok', 0], KeyF: ['ok', 0], KeyO: ['ok', 1], NumpadEnter: ['ok', 1],
   Escape: ['back', 0], Backspace: ['back', 0], KeyK: ['back', 0], KeyP: ['back', 1],
 };
 

@@ -80,3 +80,20 @@ test('every super needs full meter and comes out from both inputs', () => {
   }
   void HK;
 });
+
+test('only one super per round, and it empties the meter', () => {
+  const c = CHARS[0];
+  const s = createMatch({ p1: 0, p2: 1, stage: 0, seed: 3, mode: 'training' });
+  s.mode = 0;
+  s.f[0].x = px(250);
+  s.f[1].x = px(420);
+  s.f[0].meter = 300;
+  for (const i of [UP | SP, 0]) step(s, i, 0);
+  assert.equal(s.f[0].move, c.superIdx, 'first super should fire');
+  assert.equal(s.f[0].meter, 0);
+  for (let k = 0; k < 160; k++) step(s, 0, 0);
+  s.f[0].meter = 300;
+  let fired = false;
+  for (const i of [UP | SP, 0, 0]) { step(s, i, 0); if (s.f[0].move === c.superIdx) fired = true; }
+  assert.equal(fired, false, 'second super in the same round must be blocked');
+});

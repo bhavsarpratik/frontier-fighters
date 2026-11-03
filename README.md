@@ -31,13 +31,15 @@ Then open http://localhost:5173. Nothing needs installing; it's plain Node 22.
 
 | | One player | Two players on one keyboard |
 |---|---|---|
-| Move | WASD / arrows | P1 WASD · P2 arrows |
-| Punch L/H | U / I | P1 T / Y · P2 O / P |
-| Kick L/H | J / K | P1 G / H · P2 L / ; |
-| Special | L | P1 F · P2 . |
+| Move (W jump, S crouch) | W A S D | P1 W A S D · P2 arrows |
+| Punch | J | P1 F · P2 O |
+| Kick | K | P1 G · P2 L |
+| Special | L (or Space) | P1 H · P2 . |
+| Heavy punch / kick | U / I | P1 R / T · P2 P / ; |
 
 Other keys:
-- **Throw:** light punch + light kick
+- **Throw:** punch + kick together (J + K)
+- **Super:** once per round, when the meter is full: L + W, or QCF QCF + J
 - **Block:** hold back (hold down-back to block lows)
 - **Gamepad:** supported
 - **Mute:** M (remembered between visits), or add `?mute` to the URL

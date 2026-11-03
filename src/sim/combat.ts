@@ -136,8 +136,8 @@ function applyHit(s: SimState, ai: number, h: HitSpec, cx: number, cy: number, p
     d.stun = h.blockstun;
     d.crouchHit = isDown(d.dir) ? 1 : 0;
     pushApart(s, ai, h.push);
-    addMeter(a, Math.floor(h.dmg / 10));
-    addMeter(d, Math.floor(h.dmg / 12));
+    addMeter(a, Math.floor(h.dmg / 16));
+    addMeter(d, Math.floor(h.dmg / 18));
     const stop = Math.max(4, h.hitstop - 3);
     d.hitstop = stop;
     if (!proj) a.hitstop = stop;
@@ -176,8 +176,8 @@ function applyHit(s: SimState, ai: number, h: HitSpec, cx: number, cy: number, p
     d.frozen = h.freeze;
     pushApart(s, ai, h.push);
   }
-  addMeter(a, Math.floor(dmg / 3));
-  addMeter(d, Math.floor(dmg / 5));
+  addMeter(a, Math.floor(dmg / 6));
+  addMeter(d, Math.floor(dmg / 10));
   d.hitstop = h.hitstop;
   if (!proj) a.hitstop = h.hitstop;
   s.events.push({ t: 'hit', p: 1 - ai, x: cx, y: cy, k: h.isSuper ? 2 : h.heavy ? 1 : 0 });

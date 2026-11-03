@@ -5,8 +5,8 @@ import { P_FIGHT, P_INTRO, S_AIR, S_ATTACK, S_BLOCKSTUN, S_HITSTUN, type SimEven
 import { drawText, textWidth } from '../render/font.ts';
 
 export const KEYS: Record<Layout, { LP: string; HP: string; LK: string; HK: string; SP: string; move: string; up: string; down: string }> = {
-  solo: { LP: 'U', HP: 'I', LK: 'J', HK: 'K', SP: 'L', move: 'WASD', up: 'W', down: 'S' },
-  p1duo: { LP: 'T', HP: 'Y', LK: 'G', HK: 'H', SP: 'F', move: 'WASD', up: 'W', down: 'S' },
+  solo: { LP: 'J', HP: 'U', LK: 'K', HK: 'I', SP: 'L', move: 'WASD', up: 'W', down: 'S' },
+  p1duo: { LP: 'F', HP: 'R', LK: 'G', HK: 'T', SP: 'H', move: 'WASD', up: 'W', down: 'S' },
   p2duo: { LP: 'O', HP: 'P', LK: 'L', HK: ';', SP: '.', move: 'ARROWS', up: '↑', down: '↓' },
 };
 
@@ -35,7 +35,7 @@ export function basicsLines(layout: Layout): string[] {
   const k = KEYS[layout];
   return [
     `MOVE ${k.move}   JUMP ${k.up}   CROUCH ${k.down}   BLOCK: HOLD AWAY`,
-    `PUNCH ${k.LP} ${k.HP}   KICK ${k.LK} ${k.HK}   SPECIAL ${k.SP}   THROW ${k.LP}+${k.LK}`,
+    `${k.LP} PUNCH   ${k.LK} KICK   ${k.SP} SPECIAL   ${k.HP}/${k.HK} HEAVY   THROW ${k.LP}+${k.LK}`,
   ];
 }
 
@@ -93,7 +93,7 @@ export class Coach {
       return;
     }
     if (s.phase !== P_FIGHT) return;
-    if (me.meter >= 300 && !this.hadMeter) this.show(`SUPER READY!  ${k.SP} + ↑   (OR ${list[3].input})`, 5);
+    if (me.meter >= 300 && !me.superUsed && !this.hadMeter) this.show(`SUPER READY!  ${k.SP} + ↑   (OR ${list[3].input})`, 5);
     this.hadMeter = me.meter >= 300;
     if ((op.state === S_AIR || (op.state === S_ATTACK && isAirborne(op))) && op.vy < 0 && Math.abs(op.x - me.x) < 140 * 256) {
       const aa = c.specials.find((x) => x.motion === '623' || x.motion === '[2]8');

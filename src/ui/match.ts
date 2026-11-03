@@ -19,6 +19,8 @@ import { Coach, basicsLines, drawMoveList, hintsEnabled, setHints } from './hint
 import { P_INTRO } from '../sim/types.ts';
 import type { MatchConfig } from './vs.ts';
 
+const DEV_FULL_METER = typeof location !== 'undefined' && new URLSearchParams(location.search).has('meter');
+
 export class MatchScreen implements Screen {
   cfg: MatchConfig;
   state: SimState;
@@ -140,6 +142,7 @@ export class MatchScreen implements Screen {
       let b = b0;
       if (this.cfg.mode === 'cpu' || this.cfg.mode === 'arcade') b = this.cpu!.input(this.state, 1);
       if (this.cfg.mode === 'training') b = dummyInput(this.dummyMode, this.state, 1, this.cpu!);
+      if (DEV_FULL_METER) for (const f of this.state.f) f.meter = 300;
       step(this.state, a, b);
       if (this.cfg.mode === 'training') this.logInput(a);
       this.handleEvents(this.state.events);

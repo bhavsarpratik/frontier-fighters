@@ -17,6 +17,7 @@ import { artFull, useArt } from './art.ts';
 import { drawPuppet } from './puppet.ts';
 import { drawCutout } from './cutout.ts';
 import { drawFrames } from './frames.ts';
+import { drawSuperTheme } from './superfx.ts';
 import { artRig } from './art.ts';
 
 type Ctx = CanvasRenderingContext2D;
@@ -170,6 +171,13 @@ export class MatchScene {
       ctx.fillStyle = g;
       ctx.fillRect(-40, GROUND_Y, 560, 40);
     }
+    const theme = this.activeTheme(s);
+    if (theme) {
+      this.themeAlpha = Math.min(1, this.themeAlpha + 0.15);
+      this.themeName = theme.fx;
+      this.themeX = theme.x - cam;
+    } else this.themeAlpha = Math.max(0, this.themeAlpha - 0.06);
+    if (this.themeAlpha > 0 && this.themeName) drawSuperTheme(ctx, this.themeName as never, this.t, this.themeAlpha, this.themeX, GROUND_Y);
     if (s.freeze > 0) this.drawSuperBackdrop(ctx, s, cam);
     for (const f of s.f) {
       const x = toS(f.x) - cam;
@@ -213,12 +221,33 @@ export class MatchScene {
     if (!o.hideHud) this.drawHud(ctx, s, o);
   }
 
+  private themeAlpha = 0;
+  private themeName: string | null = null;
+  private themeX = 240;
+
+  private activeTheme(s: SimState): { fx: string; x: number } | null {
+    for (let i = 0; i < 2; i++) {
+      const f = s.f[i];
+      if (f.state !== S_ATTACK) continue;
+      const m = CHARS[f.char].moves[f.move];
+      if (m.isSuper && m.superFx && (s.freeze > 0 || f.mf < m.startup + m.active + m.recovery * 0.6)) return { fx: m.superFx, x: toS(f.x) };
+    }
+    const p = s.proj.find((q) => q.isSuper);
+    if (p) {
+      const m = CHARS[s.f[p.owner].char].moves[CHARS[s.f[p.owner].char].superIdx];
+      if (m.superFx) return { fx: m.superFx, x: toS(s.f[p.owner].x) };
+    }
+    return null;
+  }
+
   private drawSuperBackdrop(ctx: Ctx, s: SimState, cam: number): void {
     const p = s.f[Math.max(0, s.freezeOwner)];
     const cx = toS(p.x) - cam;
     const cy = GROUND_Y - 50;
-    ctx.fillStyle = 'rgba(8,0,24,0.72)';
-    ctx.fillRect(-40, -40, 560, 350);
+    if (!this.themeName) {
+      ctx.fillStyle = 'rgba(8,0,24,0.72)';
+      ctx.fillRect(-40, -40, 560, 350);
+    }
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(this.t * 0.01);
@@ -440,7 +469,8 @@ export class MatchScene {
       ctx.arc(bx, my + 3.5, 6, 0, Math.PI * 2);
       ctx.fill();
       drawText(ctx, full ? 'S' : `${lv}`, bx + 0.5, my + 0.5, { align: 'center', color: '#fff', shadow: null });
-      if (full && (this.t >> 4) % 2 === 0) drawText(ctx, 'SUPER READY', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#ffd23e', outline: '#000', shadow: null });
+      if (f.superUsed) drawText(ctx, 'SUPER USED', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#8a84a8', outline: '#000', shadow: null });
+      else if (full && (this.t >> 4) % 2 === 0) drawText(ctx, 'SUPER READY', L ? mx0 : mx0 + 126, my - 11, { align: L ? 'left' : 'right', color: '#ffd23e', outline: '#000', shadow: null });
       const d = s.f[1 - i];
       if (d.combo >= 2 && (d.state === S_HITSTUN || d.state === S_AIRHIT || d.state === S_KNOCKDOWN)) {
         const sc = d.hitstop > 0 ? 4 : 3;

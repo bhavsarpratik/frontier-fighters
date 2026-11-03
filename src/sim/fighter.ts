@@ -26,7 +26,7 @@ export function newFighter(char: number, x: number, facing: number): FighterStat
     chargeB: 0, chargeD: 0, chargeBOk: 0, chargeDOk: 0,
     inv: 0, armor: 0, airUsed: 0, dashDir: 0,
     grabbedBy: -1, grabT: 0, wins: 0, rehired: 0, buff: 0, frozen: 0, lastDmgFrame: 0, dir: 5,
-    buf: 0, bufT: 0, jumpDir: 0,
+    buf: 0, bufT: 0, jumpDir: 0, superUsed: 0,
   };
 }
 
@@ -88,7 +88,8 @@ export function startMove(s: SimState, i: number, idx: number, ex: number): void
   f.bufT = 0;
   f.buf = 0;
   if (m.isSuper) {
-    f.meter -= m.cost ?? MAX_METER;
+    f.meter = 0;
+    f.superUsed = 1;
     s.freeze = 45;
     s.freezeOwner = i;
     s.events.push({ t: 'super', p: i, s: m.name ?? m.key });
@@ -135,7 +136,7 @@ function tryAttack(s: SimState, i: number, press: number, raw: number, allow: nu
   const d = f.dir;
   if (!press) return false;
   const superMove = c.moves[c.superIdx];
-  if (f.meter >= (superMove.cost ?? MAX_METER)) {
+  if (f.meter >= (superMove.cost ?? MAX_METER) && !f.superUsed) {
     if ((press & PUNCHES && matchMotion(f.hist, f.facing, '236236')) || (press & SP && isUp(d))) {
       startMove(s, i, c.superIdx, 0);
       return true;

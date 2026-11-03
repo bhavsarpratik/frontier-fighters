@@ -180,7 +180,7 @@ export class CharSelect implements Screen {
       }
       if (this.locked[p]) drawText(ctx, 'READY!', p === 0 ? 70 : 410, 214, { scale: 2, align: 'center', color: '#ffd23e', outline: '#000', shadow: null });
     }
-    const hint = this.mode === 'local' ? 'P1: WASD + T   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'ARROWS/WASD + ENTER   BACK: ESC';
+    const hint = this.mode === 'local' ? 'P1: WASD + F   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'WASD + J (OR ENTER)   BACK: ESC';
     drawText(ctx, hint, 240, 260, { align: 'center', color: '#8a84a8' });
     if (this.mode === 'online' && this.locked[this.net!.local] && !this.locked[1 - this.net!.local]) {
       drawText(ctx, 'WAITING FOR OPPONENT...', 240, 30, { align: 'center', color: '#ffd23e' });
