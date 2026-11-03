@@ -33,7 +33,7 @@ export const wangle: CharacterDef = {
       vel: [[3, 12, 1.5, 8]], cancel: 2, sfx: 'special',
     },
     groundTruth: {
-      name: 'GROUND TRUTH', anim: 'super', isSuper: true, cost: 300, startup: 8, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'GROUND TRUTH', anim: 'super', isSuper: true, superFx: 'boxes', cost: 300, startup: 8, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'box', frame: 10, x: 0, y: 150, vx: 0, vy: -3, gravity: 0.2, w: 40, h: 44, life: 90, dmg: 70, freeze: 36,
         hitstun: 24, blockstun: 16, count: 3, spread: 42, atOpponent: true },
     },

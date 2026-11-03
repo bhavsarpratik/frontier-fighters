@@ -172,7 +172,7 @@ def gen_poses(ids, seed):
 
 
 def write_manifest() -> None:
-    files = sorted(p.name for p in OUT.glob("*.webp"))
+    files = sorted(p.name for p in OUT.glob("*.webp")) + sorted(p.name for p in OUT.glob("*_rig.json")) + sorted(p.name for p in OUT.glob("*_frames.json"))
     (OUT / "manifest.json").write_text(json.dumps(files))
 
 

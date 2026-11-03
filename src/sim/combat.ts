@@ -56,7 +56,7 @@ const canBlockState = (d: FighterState) =>
   !isAirborne(d) && (d.state === S_IDLE || d.state === S_WALK || d.state === S_CROUCH || d.state === S_BLOCKSTUN);
 
 function guardOk(d: FighterState, level: string): boolean {
-  if (!canBlockState(d) || !isBack(d.dir)) return false;
+  if (level === 'unblockable' || !canBlockState(d) || !isBack(d.dir)) return false;
   const crouch = isDown(d.dir);
   if (level === 'low') return crouch;
   if (level === 'overhead') return !crouch;

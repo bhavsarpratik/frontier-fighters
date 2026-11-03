@@ -155,7 +155,7 @@ export function drawPuppet(ctx: Ctx, f: FighterState, x: number, y: number, t: n
 }
 
 // A bright crescent from the shoulder (or hip) to the active hitbox.
-function drawSmear(ctx: Ctx, f: FighterState, x: number, y: number, H: number, s: { k: number; low: boolean; up: boolean }): void {
+export function drawSmear(ctx: Ctx, f: FighterState, x: number, y: number, H: number, s: { k: number; low: boolean; up: boolean }): void {
   const m = CHARS[f.char].moves[f.move];
   const hb = m.hit!;
   const fy = f.y / FX;

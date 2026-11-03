@@ -3,11 +3,16 @@ import type { Motion } from '../sim/input.ts';
 // Boxes are in pixels, x measured forward from the fighter origin, y up from the feet.
 export interface Box { x: number; y: number; w: number; h: number }
 
-export type Level = 'high' | 'mid' | 'low' | 'overhead';
+export type Level = 'high' | 'mid' | 'low' | 'overhead' | 'unblockable';
 
 export type ProjKind =
   | 'chalk' | 'orb' | 'bigorb' | 'box' | 'zombie' | 'spud' | 'labeler' | 'gpu'
-  | 'beam' | 'pr' | 'cloud' | 'rocket' | 'wave';
+  | 'beam' | 'pr' | 'cloud' | 'rocket' | 'wave'
+  | 'tiles' | 'ice' | 'lightning' | 'netbeam' | 'clone' | 'portal' | 'chip' | 'fire' | 'chess' | 'students' | 'wireframe' | 'slide';
+
+export type SuperFx =
+  | 'chalk' | 'code' | 'zombie' | 'boxes' | 'cosmos' | 'gpu' | 'void' | 'space'
+  | 'wireframe' | 'classroom' | 'neural' | 'film' | 'heat' | 'chess';
 
 export interface ProjDef {
   kind: ProjKind;
@@ -67,6 +72,7 @@ export interface MoveDef {
   fxArg?: number;
   gravity?: boolean;      // apply gravity during move (airborne specials)
   sfx?: 'light' | 'heavy' | 'special' | 'super';
+  superFx?: SuperFx;
 }
 
 export interface SpecialInput {
@@ -103,6 +109,7 @@ export interface CharacterDef {
   title: string;
   archetype: string;
   inspired: string;
+  pronoun?: 'he' | 'she';
   hp: number;
   walkF: number; walkB: number;
   jumpV: number; jumpX: number; gravity: number;

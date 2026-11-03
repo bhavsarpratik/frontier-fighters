@@ -39,7 +39,7 @@ await writeFile(join(root, 'dist', '.nojekyll'), '');
 const assets = {};
 const artDir = join(root, 'assets', 'art');
 for (const f of await readdir(artDir).catch(() => [])) {
-  const json = f.endsWith('_rig.json');
+  const json = f.endsWith('_rig.json') || f.endsWith('_frames.json');
   if (!f.endsWith('.webp') && !json) continue;
   const buf = await readFile(join(artDir, f));
   await mkdir(join(root, 'dist', 'assets', 'art'), { recursive: true });

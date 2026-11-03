@@ -114,7 +114,7 @@ def build(fid: str) -> None:
 
 
 def manifest() -> None:
-    files = sorted(p.name for p in ART.glob("*.webp")) + sorted(p.name for p in ART.glob("*_rig.json"))
+    files = sorted(p.name for p in ART.glob("*.webp")) + sorted(p.name for p in ART.glob("*_rig.json")) + sorted(p.name for p in ART.glob("*_frames.json"))
     (ART / "manifest.json").write_text(json.dumps(files))
 
 

@@ -36,7 +36,7 @@ export const zuckerbot: CharacterDef = {
       vel: [[4, 11, 1.4, 7]], cancel: 2, sfx: 'special',
     },
     metaLock: {
-      name: 'META LOCK', anim: 'grab', isSuper: true, cost: 300, startup: 4, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'META LOCK', anim: 'grab', isSuper: true, superFx: 'void', cost: 300, startup: 4, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       grab: { range: 44, dmg: 380, tech: false, frames: 60, toss: 6 },
     },
   },

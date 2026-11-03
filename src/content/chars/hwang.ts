@@ -37,7 +37,7 @@ export const hwang: CharacterDef = {
         hitstun: 24, blockstun: 16, atOpponent: true },
     },
     moreYouBuy: {
-      name: 'THE MORE YOU BUY', anim: 'super', isSuper: true, cost: 300, startup: 10, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'THE MORE YOU BUY', anim: 'super', isSuper: true, superFx: 'gpu', cost: 300, startup: 10, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'gpu', frame: 12, x: 0, y: 200, vx: 0, vy: -1, gravity: 0.3, w: 28, h: 16, life: 110, dmg: 48, hitstun: 26, blockstun: 16,
         count: 5, spread: 30, atOpponent: true },
     },

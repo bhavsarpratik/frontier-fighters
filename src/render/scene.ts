@@ -16,11 +16,12 @@ import { drawPortrait } from './portrait.ts';
 import { artFull, useArt } from './art.ts';
 import { drawPuppet } from './puppet.ts';
 import { drawCutout } from './cutout.ts';
+import { drawFrames } from './frames.ts';
 import { artRig } from './art.ts';
 
 type Ctx = CanvasRenderingContext2D;
 const toS = (v: number) => v / FX;
-export const CAM_ZOOM = 1.15;
+export const CAM_ZOOM = 1.35;
 const VIEW_W = SCREEN_W / CAM_ZOOM;
 const ANCHOR_Y = GROUND_Y + 14;
 const SPRITE_RES = 2 * CAM_ZOOM;
@@ -240,6 +241,14 @@ export class MatchScene {
 
   private drawFighter(ctx: Ctx, s: SimState, i: number, cam: number, rim: [number, number, number], main: boolean): void {
     const f = s.f[i];
+    if (useArt()) {
+      if (main && f.inv > 0 && f.state !== S_ATTACK && (this.t >> 1) % 2 === 0) ctx.globalAlpha = 0.55;
+      const ok = drawFrames(ctx, f, toS(f.x) - cam, GROUND_Y - toS(f.y), this.t, {
+        alt: this.alt[i], flash: main && f.hitstop > 0 && (f.state === S_HITSTUN || f.state === S_AIRHIT),
+      });
+      ctx.globalAlpha = 1;
+      if (ok) return;
+    }
     if (useArt() && artRig(f.char)) {
       if (main && f.inv > 0 && f.state !== S_ATTACK && (this.t >> 1) % 2 === 0) ctx.globalAlpha = 0.55;
       drawCutout(ctx, f, fighterPose(s, f), toS(f.x) - cam, GROUND_Y - toS(f.y), {

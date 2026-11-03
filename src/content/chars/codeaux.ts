@@ -33,7 +33,7 @@ export const codeaux: CharacterDef = {
       vel: [[4, 14, 1.2, 7]], juggle: true, launch: 6, cancel: 2, sfx: 'special',
     },
     mergeConflict: {
-      name: 'MERGE CONFLICT', anim: 'superRush', isSuper: true, cost: 300, startup: 6, active: 30, recovery: 24,
+      name: 'MERGE CONFLICT', anim: 'superRush', isSuper: true, superFx: 'code', cost: 300, startup: 6, active: 30, recovery: 24,
       dmg: 32, hits: 9, hitGap: 3, hitstun: 20, blockstun: 14, push: 2, hit: { x: 4, y: 16, w: 52, h: 64 },
       vel: [[6, 35, 7]], juggle: true, sfx: 'super',
     },

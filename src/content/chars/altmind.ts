@@ -34,7 +34,7 @@ export const altmind: CharacterDef = {
       vel: [[4, 12, 1.2, 7.8]], cancel: 2, sfx: 'special',
     },
     superintelligence: {
-      name: 'SUPERINTELLIGENCE', anim: 'super', isSuper: true, cost: 300, startup: 12, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'SUPERINTELLIGENCE', anim: 'super', isSuper: true, superFx: 'cosmos', cost: 300, startup: 12, active: 4, recovery: 40, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'bigorb', frame: 12, x: 40, y: 30, vx: 2.4, w: 48, h: 48, life: 220, hits: 6, hitGap: 6, dmg: 40, hitstun: 22, blockstun: 16 },
     },
   },

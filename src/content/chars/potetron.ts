@@ -6,6 +6,7 @@ export const potetron: CharacterDef = {
   name: 'POTETRON',
   short: 'POTETRON',
   title: '4-Day Build',
+  pronoun: 'she',
   archetype: 'Trickster / Summoner',
   inspired: 'Poteto',
   hp: 980,
@@ -13,9 +14,9 @@ export const potetron: CharacterDef = {
   height: 90, width: 14,
   stage: 3,
   look: {
-    face: { smile: 1 },
-    skin: '#e0b090', hair: '#000000', top: '#151515', top2: '#ffffff', pants: '#2b3a55', shoes: '#e04040',
-    accent: '#ffd23e', hairStyle: 'none', topStyle: 'tee', height: 0.97, bulk: 1, head: 'potato', shades: true, emblem: 'none',
+    face: { jaw: 0.86, nose: 0.85, eye: 1.2, brow: 0.8, smile: 1.2, eyeColor: '#2a6a5a' },
+    skin: '#f0cdb0', hair: '#4a3022', top: '#a89a86', top2: '#a89a86', pants: '#8fb0d0', shoes: '#e04040',
+    accent: '#c99a5b', hairStyle: 'side', topStyle: 'tee', height: 0.92, bulk: 0.85, glasses: true,
   },
   moves: {
     ...commonMoves({ reach: 1, power: 1, height: 0.98 }),
@@ -33,7 +34,7 @@ export const potetron: CharacterDef = {
       vel: [[4, 12, 1.4, 7.6]], cancel: 2, sfx: 'special',
     },
     fourDayBuild: {
-      name: 'FOUR DAY BUILD', anim: 'super', isSuper: true, cost: 300, startup: 10, active: 4, recovery: 36, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'FOUR DAY BUILD', anim: 'super', isSuper: true, superFx: 'zombie', cost: 300, startup: 10, active: 4, recovery: 36, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'zombie', frame: 12, x: 40, y: 0, vx: 1.8, w: 18, h: 36, life: 240, hits: 2, hitGap: 12, dmg: 46, hitstun: 26, blockstun: 16, count: 4, spread: 26 },
     },
   },
@@ -44,7 +45,7 @@ export const potetron: CharacterDef = {
   ],
   superMove: 'fourDayBuild',
   quotes: [
-    'BUILT THIS WIN IN FOUR DAYS. ON A POTATO.',
+    'BUILT THIS WIN IN FOUR DAYS. ON A POTATO. SHE CAN DO THAT.',
     'THE HORDE ONLY WANTED A RESET. YOU GOT ONE.',
     '124 KILOBYTES OF PURE PAIN.',
   ],

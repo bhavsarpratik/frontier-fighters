@@ -34,7 +34,7 @@ export const karpathink: CharacterDef = {
       hitstun: 18, blockstun: 14, push: 3, hit: { x: 10, y: 28, w: 44, h: 30 }, vel: [[8, 25, 5]], sfx: 'special',
     },
     fromScratch: {
-      name: 'FROM SCRATCH', anim: 'super', isSuper: true, cost: 300, startup: 8, active: 4, recovery: 40,
+      name: 'FROM SCRATCH', anim: 'super', isSuper: true, superFx: 'chalk', cost: 300, startup: 8, active: 4, recovery: 40,
       dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'beam', frame: 10, x: 40, y: 18, vx: 5.5, w: 64, h: 76, life: 90, hits: 7, hitGap: 4, dmg: 42,
         hitstun: 22, blockstun: 16 },

@@ -7,9 +7,9 @@ import { px } from '../src/sim/fixed.ts';
 import { S_ATTACK } from '../src/sim/types.ts';
 import { ANIMS } from '../src/render/poses.ts';
 
-test('roster has 8 fighters with unique ids', () => {
-  assert.equal(CHARS.length, 8);
-  assert.equal(new Set(CHARS.map((c) => c.def.id)).size, 8);
+test('roster has 14 fighters with unique ids', () => {
+  assert.equal(CHARS.length, 14);
+  assert.equal(new Set(CHARS.map((c) => c.def.id)).size, 14);
 });
 
 test('every move has sane frame data and a known animation', () => {
@@ -21,6 +21,7 @@ test('every move has sane frame data and a known animation', () => {
       const effect = m.hit || m.proj || m.grab || m.fx;
       assert.ok(effect, `${where} does nothing`);
       if (m.hit) assert.ok(m.dmg > 0 && m.hitstun > 0, `${where} hits for nothing`);
+      if (m.isSuper) assert.ok(m.superFx, `${where} super needs a cinematic theme`);
       if (m.proj) assert.ok(m.proj.frame <= m.total, `${where} projectile spawns after the move ends`);
       if (m.hits && m.hits > 1) assert.ok((m.hits - 1) * (m.hitGap ?? 4) < m.active, `${where} cannot land all ${m.hits} hits`);
     }

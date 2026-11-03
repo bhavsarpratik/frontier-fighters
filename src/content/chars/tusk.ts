@@ -33,7 +33,7 @@ export const tusk: CharacterDef = {
       fx: 'buff', fxArg: 600, sfx: 'special',
     },
     fullSend: {
-      name: 'FULL SEND', anim: 'super', isSuper: true, cost: 300, startup: 8, active: 4, recovery: 36, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
+      name: 'FULL SEND', anim: 'super', isSuper: true, superFx: 'space', cost: 300, startup: 8, active: 4, recovery: 36, dmg: 0, hitstun: 0, blockstun: 0, sfx: 'super',
       proj: { kind: 'rocket', frame: 8, x: 20, y: 50, vx: 7, w: 30, h: 16, life: 90, hits: 5, hitGap: 3, dmg: 50, hitstun: 22, blockstun: 14, launch: 6 },
     },
   },
