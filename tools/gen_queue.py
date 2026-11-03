@@ -34,11 +34,21 @@ NEW_KEYS = {
     "navy blazer over an open-collar light blue shirt, dark trousers, brown loafers",
     "router": "a tall broad-shouldered man in his late 50s with short neatly combed silver-gray hair, clean-shaven, friendly confident Southern grin, "
     "charcoal gray suit jacket over a crisp white open-collar shirt, no tie, dark gray trousers, black dress shoes",
+    "pitchai": "a calm friendly South Asian man in his early 50s with short neat black hair graying at the temples, clean-shaven, gentle warm smile, "
+    "light gray crewneck sweater over a white collared shirt, dark chinos, white sneakers",
+    "jazzy": "a fit man in his mid 50s with a shaved bald head, clean-shaven, broad friendly grin, navy fleece vest over a light blue button-down shirt, "
+    "blue jeans, brown leather shoes",
+    "amodeus": "a slim thoughtful man in his early 40s with short dark brown curly hair and rectangular glasses, light stubble, earnest focused expression, "
+    "rust-orange crewneck sweater, dark gray trousers, gray sneakers",
+    "safeskever": "a lean intense man in his late 30s, bald on top with very short dark hair on the sides, clean-shaven, piercing thoughtful eyes, "
+    "plain black t-shirt, dark jeans, black sneakers",
+    "almighty": "a sharp energetic man in his mid 30s with short dark wavy hair and a neat short dark beard, confident half-smile, "
+    "charcoal zip-up hoodie over a white t-shirt, slim black jeans, white minimalist sneakers",
     "hassabyss": "a slim man in his late 40s with short dark hair, thoughtful smirk, navy quarter-zip sweater over a collared shirt, dark jeans, black sneakers",
 }
 
 ROSTER = ["karpathink", "codeaux", "potetron", "wangle", "altmind", "hwang", "zuckerbot", "tusk",
-          "feifei", "ngram", "hintern", "mirage", "zen", "hassabyss", "packet", "router"]
+          "feifei", "ngram", "hintern", "mirage", "zen", "hassabyss", "packet", "router", "pitchai", "jazzy", "amodeus", "safeskever", "almighty"]
 
 POSES = {
     "idle": "relaxed but ready fighting guard stance, fists up near the chin, knees slightly bent",
@@ -84,15 +94,22 @@ def key_job(fid: str) -> str:
     out = KEYS / f"{fid}.png"
     if out.exists():
         return f"key {fid}: exists"
-    ref = [ART / "karpathink_raw.png"]
+    job = KEYS / f"job_{fid}"
+    job.mkdir(exist_ok=True)
+    job_ref = job / "style_reference.png"
+    shutil.copy(ART / "karpathink_raw.png", job_ref)
+    job_out = job / "out.png"
+    job_out.unlink(missing_ok=True)
     extra = ""
     if fid == "potetron":
         extra = "This character is a woman (she/her). "
-    prompt = f"""Use your image generation tool to create ONE new image, then save it as {out} (PNG).
+    prompt = f"""Use your image generation tool to create ONE new image, then save it as {job_out} (PNG).
 Full body character select art for a 90s arcade 2D fighting game, in the same art style, line weight and cel shading as the attached reference.
 {extra}Character: {NEW_KEYS[fid]}.
 Pose (important): wide confident fighting stance, three-quarter view facing right, whole body visible from head to shoes, both arms held out away from the torso with fists clenched and nothing crossing the chest, legs wide apart and fully visible. No floating effects, no props, nothing overlapping the body. Plain flat pure white background (not transparent, no gradient, no floor), single character, centered, no text. Fictional parody character. Do not do anything else."""
-    ok = codex(prompt, ref, out)
+    ok = codex(prompt, [job_ref], job_out, cwd=job)
+    if ok:
+        shutil.move(job_out, out)
     return f"key {fid}: {'ok' if ok else 'FAILED'}"
 
 

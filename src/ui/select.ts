@@ -12,13 +12,12 @@ import { app, drawBackdrop, type Screen } from './app.ts';
 import { TitleScreen } from './title.ts';
 import type { NetLink } from './netlink.ts';
 import { VsScreen } from './vs.ts';
-import { moveList } from './hints.ts';
 import { drawArt } from '../render/art.ts';
 
 export type Mode = 'cpu' | 'local' | 'training' | 'online' | 'arcade';
 
-const COLS = 4;
-const CELL = 50;
+const COLS = 11;
+const CELL = 40;
 
 export function drawIdleFighter(ctx: CanvasRenderingContext2D, char: number, x: number, y: number, t: number, flip: boolean, alt: boolean, scale = 2, anim = 'idle'): void {
   const def = ROSTER[char];
@@ -33,6 +32,7 @@ export class CharSelect implements Screen {
   t = 0;
   cur: [number, number];
   locked: [boolean, boolean] = [false, false];
+  lockT = [0, 0];
   phase = 0;
 
   mode: Mode;
@@ -45,12 +45,12 @@ export class CharSelect implements Screen {
   }
 
   enter(): void {
-    playMusic(2);
+    playMusic(4);
     if (this.net) {
       this.net.onMsg = (m) => {
         const r = 1 - this.net!.local;
         if (m.t === 'cur') this.cur[r] = m.i;
-        if (m.t === 'lock') { this.cur[r] = m.i; this.locked[r] = true; sfx.confirm(); }
+        if (m.t === 'lock') { this.cur[r] = m.i; this.locked[r] = true; this.lockT[r] = 12; sfx.confirm(); }
         if (m.t === 'unlock') this.locked[r] = false;
         if (m.t === 'go') app.go(new VsScreen({ mode: 'online', p1: m.p1, p2: m.p2, stage: m.stage, seed: m.seed, net: this.net, delay: m.delay }));
         if (m.t === 'leave') this.net!.closed = true;
@@ -77,6 +77,7 @@ export class CharSelect implements Screen {
 
   update(menu: MenuInput[]): void {
     this.t++;
+    for (let p = 0; p < 2; p++) if (this.lockT[p] > 0) this.lockT[p]--;
     const n = ROSTER.length;
     if (app.autoplay && this.t === 30 && this.net && !this.locked[this.net.local]) menu = [...menu, { up: false, down: false, left: false, right: false, ok: true, back: false, who: 0 }];
     for (const m of menu) {
@@ -102,8 +103,7 @@ export class CharSelect implements Screen {
       let nc = c;
       if (m.left) nc = (c + n - 1) % n;
       if (m.right) nc = (c + 1) % n;
-      if (m.up) nc = (c + n - COLS) % n;
-      if (m.down) nc = (c + COLS) % n;
+      if (m.up || m.down) nc = c >= COLS ? c - COLS : Math.min(n - 1, c + COLS);
       if (nc !== c) {
         this.cur[p] = nc;
         sfx.menu();
@@ -111,6 +111,7 @@ export class CharSelect implements Screen {
       }
       if (m.ok) {
         this.locked[p] = true;
+        this.lockT[p] = 12;
         sfx.confirm();
         this.net?.send({ t: 'lock', i: this.cur[p] });
         if (this.mode === 'arcade') {
@@ -127,64 +128,127 @@ export class CharSelect implements Screen {
   }
 
   render(ctx: CanvasRenderingContext2D): void {
-    drawBackdrop(ctx, this.t);
-    drawText(ctx, 'SELECT YOUR FIGHTER', 240, 8, { scale: 2, align: 'center', gradient: ['#fff', '#ffd23e'], outline: '#000', shadow: null });
+    const t = this.t;
     const n = ROSTER.length;
+    const solo = this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade';
+    const show = (p: number) => !(solo && p === 1 && this.phase === 0);
+    const COL = ['#3ec8ff', '#ff3e8a'];
+
+    drawBackdrop(ctx, t, '#160828', '#04020a');
+    for (let p = 0; p < 2; p++) {
+      const cx = p === 0 ? 112 : 368;
+      const g = ctx.createRadialGradient(cx, 110, 10, cx, 110, 170);
+      g.addColorStop(0, p === 0 ? 'rgba(62,200,255,0.42)' : 'rgba(255,62,138,0.42)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 480, 270);
+    }
+
+    // the two fighters, big
+    for (let p = 0; p < 2; p++) {
+      const x = p === 0 ? 112 : 368;
+      if (!show(p)) {
+        drawText(ctx, '?', x, 60, { scale: 10, align: 'center', color: 'rgba(255,255,255,0.18)', shadow: null });
+        continue;
+      }
+      ctx.save();
+      ctx.shadowColor = COL[p];
+      ctx.shadowBlur = this.locked[p] ? 24 : 12;
+      const bounce = this.lockT[p] > 0 ? Math.sin((this.lockT[p] / 12) * Math.PI) * 4 : 0;
+      if (!drawArt(ctx, this.cur[p], x, 190 - bounce, 196, p === 1, t)) {
+        drawIdleFighter(ctx, this.cur[p], x, 186, t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.7, this.locked[p] ? 'win' : 'idle');
+      }
+      ctx.restore();
+      if (this.lockT[p] > 0) {
+        ctx.globalAlpha = this.lockT[p] / 12 * 0.5;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(p === 0 ? 0 : 240, 0, 240, 186);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // name plates over a dark band
+    const band = ctx.createLinearGradient(0, 128, 0, 186);
+    band.addColorStop(0, 'rgba(4,2,12,0)');
+    band.addColorStop(1, 'rgba(4,2,12,0.92)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, 128, 480, 58);
+    for (let p = 0; p < 2; p++) {
+      if (!show(p)) continue;
+      const def = ROSTER[this.cur[p]];
+      const L = p === 0;
+      const tx = L ? 10 : 470;
+      const al = L ? 'left' : 'right';
+      drawText(ctx, def.short, tx, 143, { scale: 3, align: al, gradient: L ? ['#ffffff', '#7ad7ff'] : ['#ffffff', '#ff8ab0'], outline: '#000', shadow: null });
+      drawText(ctx, def.title.toUpperCase(), tx, 167, { align: al, color: '#ffd23e', outline: '#000', shadow: null });
+      drawText(ctx, def.archetype.toUpperCase(), tx, 176, { align: al, color: '#a8a2c8', outline: '#000', shadow: null });
+      if (this.locked[p]) {
+        ctx.save();
+        ctx.translate(L ? 112 : 368, 112);
+        ctx.rotate(-0.12);
+        drawText(ctx, 'READY!', 0, 0, { scale: 3, align: 'center', gradient: ['#fff8c0', '#ffb000'], outline: '#401000', shadow: null });
+        ctx.restore();
+      }
+    }
+
+    const pulse = 1 + Math.sin(t / 10) * 0.04;
+    ctx.save();
+    ctx.translate(240, 92);
+    ctx.scale(pulse, pulse);
+    ctx.shadowColor = '#ff3e8a';
+    ctx.shadowBlur = 16;
+    drawText(ctx, 'VS', 0, -14, { scale: 4, align: 'center', gradient: ['#fff8c0', '#ff3e8a'], outline: '#2a0040', shadow: null });
+    ctx.restore();
+    if (this.mode === 'online' && this.locked[this.net!.local] && !this.locked[1 - this.net!.local]) {
+      drawText(ctx, 'WAITING FOR OPPONENT...', 240, 120, { align: 'center', color: '#ffd23e', outline: '#000', shadow: null });
+    }
+
+    // portrait strip
     const rows = Math.ceil(n / COLS);
     const gx = 240 - (COLS * CELL) / 2;
-    const gy = 270 - rows * CELL - 22;
+    const gy = 188;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(0, gy - 2, 480, rows * CELL + 4);
+    const hot = new Set<number>();
+    for (let p = 0; p < 2; p++) if (show(p)) hot.add(this.cur[p]);
     for (let i = 0; i < n; i++) {
+      if (hot.has(i)) continue;
       const x = gx + (i % COLS) * CELL;
       const y = gy + Math.floor(i / COLS) * CELL;
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = '#1a1030';
       ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+      ctx.globalAlpha = 0.7;
       drawPortrait(ctx, i, false, x + 2, y + 2, CELL - 4);
+      ctx.globalAlpha = 1;
     }
-    const label = this.mode === 'online' ? ['P1', 'P2'] : this.mode === 'local' ? ['P1', 'P2'] : ['P1', this.mode === 'training' ? 'DUMMY' : 'CPU'];
+    const labels = this.mode === 'online' || this.mode === 'local' ? ['P1', 'P2'] : ['P1', this.mode === 'training' ? 'DUMMY' : 'CPU'];
     for (let p = 0; p < 2; p++) {
-      if ((this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade') && p === 1 && this.phase === 0) continue;
+      if (!show(p)) continue;
       const i = this.cur[p];
-      const x = gx + (i % COLS) * CELL;
-      const y = gy + Math.floor(i / COLS) * CELL;
-      const col = p === 0 ? '#3ec8ff' : '#ff3e8a';
-      const blink = this.locked[p] || (this.t >> 3) % 2 === 0;
-      ctx.strokeStyle = blink ? col : '#fff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x + 1 + p, y + 1 + p, CELL - 2 - p * 2, CELL - 2 - p * 2);
-      drawText(ctx, label[p], x + (p === 0 ? 3 : CELL - 3), y + CELL - 10, { align: p === 0 ? 'left' : 'right', color: col, outline: '#000', shadow: null });
-    }
-    for (let p = 0; p < 2; p++) {
-      if ((this.mode === 'cpu' || this.mode === 'training' || this.mode === 'arcade') && p === 1 && this.phase === 0) continue;
-      const def = ROSTER[this.cur[p]];
-      const x = p === 0 ? 70 : 410;
-      if (!drawArt(ctx, this.cur[p], x + (p === 0 ? 10 : -10), 262, 228, p === 1, this.t)) {
-        drawIdleFighter(ctx, this.cur[p], x, 210, this.t, p === 1, p === 1 && this.cur[0] === this.cur[1], 1.6, this.locked[p] ? 'win' : 'idle');
+      const pop = 4;
+      const x = gx + (i % COLS) * CELL - pop;
+      const y = gy + Math.floor(i / COLS) * CELL - pop;
+      const sz = CELL + pop * 2;
+      ctx.save();
+      ctx.shadowColor = COL[p];
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = COL[p];
+      ctx.fillRect(x - 1, y - 1, sz + 2, sz + 2);
+      ctx.restore();
+      drawPortrait(ctx, i, p === 1 && this.cur[0] === this.cur[1], x + 1, y + 1, sz - 2);
+      if (!this.locked[p] && (t >> 3) % 2 === 0) {
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 0.5, y + 0.5, sz - 1, sz - 1);
       }
-      const g = ctx.createLinearGradient(p === 0 ? 0 : 480, 0, p === 0 ? 230 : 250, 0);
-      g.addColorStop(0, 'rgba(6,3,18,0.86)');
-      g.addColorStop(0.75, 'rgba(6,3,18,0.6)');
-      g.addColorStop(1, 'rgba(6,3,18,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(p === 0 ? 0 : 250, 28, 230, 136);
-      const tx = p === 0 ? 6 : 474;
-      const al = p === 0 ? 'left' : 'right';
-      drawText(ctx, def.name, tx, 34, { align: al, color: '#fff' });
-      drawText(ctx, def.title.toUpperCase(), tx, 44, { align: al, color: p === 0 ? '#7ad7ff' : '#ff8ab0' });
-      drawText(ctx, def.archetype.toUpperCase(), tx, 54, { align: al, color: '#aaa' });
-      const layout = this.mode === 'local' ? (p === 0 ? 'p1duo' : 'p2duo') : 'solo';
-      if (p === 0 || this.mode === 'local') {
-        moveList(this.cur[p], layout).forEach((l, k) => {
-          drawText(ctx, l.name, tx, 70 + k * 20, { align: al, color: '#ffd23e' });
-          drawText(ctx, `${l.easy}  OR  ${l.input}`, tx, 79 + k * 20, { align: al, color: '#bfe9ff' });
-        });
-      }
-      if (this.locked[p]) drawText(ctx, 'READY!', p === 0 ? 70 : 410, 214, { scale: 2, align: 'center', color: '#ffd23e', outline: '#000', shadow: null });
+      const tagW = labels[p].length * 6 + 6;
+      const tx = p === 0 ? x : x + sz - tagW;
+      ctx.fillStyle = COL[p];
+      ctx.fillRect(tx, y + sz - 9, tagW, 9);
+      drawText(ctx, labels[p], tx + 3, y + sz - 8, { color: '#000', shadow: null });
     }
-    const hint = this.mode === 'local' ? 'P1: WASD + F   P2: ARROWS + O   BACK: ESC / P' : this.mode === 'online' ? `${this.net!.label}` : 'ARROWS + ENTER   BACK: ESC';
-    drawText(ctx, hint, 240, 260, { align: 'center', color: '#8a84a8' });
-    if (this.mode === 'online' && this.locked[this.net!.local] && !this.locked[1 - this.net!.local]) {
-      drawText(ctx, 'WAITING FOR OPPONENT...', 240, 30, { align: 'center', color: '#ffd23e' });
-    }
+    const hint = this.mode === 'local' ? 'P1 F   P2 O   ESC BACK' : this.mode === 'online' ? `${this.net!.label}` : 'ENTER SELECT   ESC BACK';
+    drawText(ctx, hint, 240, 6, { align: 'center', color: '#c8c2e8', outline: '#000', shadow: null });
   }
 }
 

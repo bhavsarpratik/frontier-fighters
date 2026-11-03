@@ -18,5 +18,20 @@
   "knockdown": {
    "mirror": true
   }
+ },
+ "pitchai": {
+  "knockdown": {
+   "mirror": true
+  }
+ },
+ "amodeus": {
+  "knockdown": {
+   "mirror": true
+  }
+ },
+ "almighty": {
+  "knockdown": {
+   "mirror": true
+  }
  }
 }

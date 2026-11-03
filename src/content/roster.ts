@@ -15,8 +15,14 @@ import { zen } from './chars/zen.ts';
 import { hassabyss } from './chars/hassabyss.ts';
 import { packet } from './chars/packet.ts';
 import { router } from './chars/router.ts';
+import { pitchai } from './chars/pitchai.ts';
+import { jazzy } from './chars/jazzy.ts';
+import { amodeus } from './chars/amodeus.ts';
+import { safeskever } from './chars/safeskever.ts';
+import { almighty } from './chars/almighty.ts';
 
 export const ROSTER: CharacterDef[] = [
   karpathink, codeaux, potetron, wangle, altmind, hwang, zuckerbot,
   tusk, feifei, ngram, hintern, mirage, zen, hassabyss, packet, router,
+  pitchai, jazzy, amodeus, safeskever, almighty,
 ];

@@ -19,16 +19,16 @@ export class TitleScreen implements Screen {
   t = 0;
   idle = 0;
   menu = new MenuList([
-    { label: 'ARCADE', hint: 'CLIMB THE LADDER TO THE FINAL BOSS', act: () => app.go(new CharSelect('arcade')) },
-    { label: 'VERSUS CPU', hint: 'FIGHT THE FRONTIER, ONE MODEL AT A TIME', act: () => app.go(new CharSelect('cpu')) },
-    { label: 'VERSUS LOCAL', hint: 'TWO PLAYERS, ONE KEYBOARD (OR GAMEPADS)', act: () => app.go(new CharSelect('local')) },
-    { label: 'ONLINE', hint: 'PEER-TO-PEER ROLLBACK. NO SERVERS.', act: () => void import('./lobby.ts').then((m) => app.go(new m.LobbyScreen())) },
-    { label: 'TRAINING', hint: 'HITBOXES, FRAME DATA, DUMMY', act: () => app.go(new CharSelect('training')) },
-    { label: 'CONTROLS', hint: 'KEYBOARD AND GAMEPAD', act: () => app.go(new ControlsScreen()) },
+    { label: 'ARCADE', act: () => app.go(new CharSelect('arcade')) },
+    { label: 'VERSUS CPU', act: () => app.go(new CharSelect('cpu')) },
+    { label: 'VERSUS LOCAL', act: () => app.go(new CharSelect('local')) },
+    { label: 'ONLINE', act: () => void import('./lobby.ts').then((m) => app.go(new m.LobbyScreen())) },
+    { label: 'TRAINING', act: () => app.go(new CharSelect('training')) },
+    { label: 'CONTROLS', act: () => app.go(new ControlsScreen()) },
   ]);
 
   enter(): void {
-    playMusic(1);
+    playMusic(4);
   }
 
   update(m: MenuInput[]): void {
@@ -91,8 +91,7 @@ export class TitleScreen implements Screen {
 
     // matchup caption under the fighters
     const cap = (i: number, x: number, al: 'left' | 'right') => {
-      drawText(ctx, ROSTER[i].short, x, 214, { scale: 2, align: al, color: '#fff', outline: '#000', shadow: null });
-      drawText(ctx, ROSTER[i].title.toUpperCase(), x, 232, { align: al, color: '#ffd23e', outline: '#000', shadow: null });
+      drawText(ctx, ROSTER[i].short, x, 222, { scale: 2, align: al, color: '#fff', outline: '#000', shadow: null });
     };
     ctx.globalAlpha = fade;
     cap(a, 8 - slide * 120, 'left');
@@ -101,20 +100,18 @@ export class TitleScreen implements Screen {
 
     // menu panel
     ctx.fillStyle = 'rgba(8,4,24,0.78)';
-    ctx.fillRect(140, 124, 200, 104);
+    ctx.fillRect(140, 124, 200, 88);
     ctx.fillStyle = '#ff3e8a';
     ctx.fillRect(140, 124, 200, 2);
     ctx.fillStyle = 'rgba(255,62,138,0.35)';
-    ctx.fillRect(140, 226, 200, 1);
+    ctx.fillRect(140, 210, 200, 1);
     this.menu.render(ctx, 240, 131, t, 13);
 
     // bottom strip: how to play at a glance
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(0, 243, 480, 27);
-    drawText(ctx, 'ARROWS MOVE   A PUNCH  S KICK  D SPECIAL  W SUPER   ENTER SELECT   ESC MENU', 240, 247, { align: 'center', color: '#bfe9ff', shadow: null });
-    drawText(ctx, `${n} FIGHTERS - ${STAGES.length} ARENAS - ONLINE ROLLBACK - PARODY, NOT AFFILIATED WITH ANYONE`, 240, 259, { align: 'center', color: '#8a84a8', shadow: null });
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 254, 480, 16);
+    drawText(ctx, 'ARROWS + ENTER   ESC MENU   PARODY, NOT AFFILIATED', 240, 258, { align: 'center', color: '#8a84a8', shadow: null });
     drawText(ctx, VERSION, 474, 4, { align: 'right', color: '#8a84a8', outline: '#000', shadow: null });
-    drawText(ctx, 'M MUTE  F8 CRT', 6, 4, { color: '#8a84a8', outline: '#000', shadow: null });
   }
 
   private fighter(ctx: CanvasRenderingContext2D, char: number, x: number, flip: boolean): void {
