@@ -1,5 +1,9 @@
 # Frontier Fighters
 
+**Play now: [bhavsarpratik.github.io/frontier-fighters](https://bhavsarpratik.github.io/frontier-fighters/)**
+
+[![Frontier Fighters title screen](docs/cover.jpg)](https://bhavsarpratik.github.io/frontier-fighters/)
+
 A 2D arcade fighting game where the AI frontier settles things with fists. It runs in the
 browser and online play is peer-to-peer, so there's no game server.
 
