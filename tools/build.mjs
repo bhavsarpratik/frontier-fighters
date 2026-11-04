@@ -48,6 +48,7 @@ const distHtml = html.replace('<script type="module" src="/src/main.ts"></script
 if (distHtml === html) throw new Error('index.html entry script tag not found');
 await writeFile(join(root, 'dist', 'index.html'), distHtml);
 await writeFile(join(root, 'dist', '.nojekyll'), '');
+await writeFile(join(root, 'dist', 'og-cover.jpg'), await readFile(join(root, 'assets', 'og-cover.jpg')));
 const assets = {};
 for (const f of artFiles) {
   const json = f.endsWith('_rig.json') || f.endsWith('_frames.json');
