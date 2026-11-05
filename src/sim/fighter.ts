@@ -124,7 +124,9 @@ function doubleTap(hist: number[], facing: number, want: number): boolean {
   for (let i = n - 2; i >= Math.max(0, n - 14); i--) {
     const d = numpad(hist[i], facing);
     if (d === want && sawNeutral) return true;
-    if (d !== want) sawNeutral = true;
+    // Only true neutral separates taps, so 6-2-3-6 (a rolled DP) is not a dash.
+    if (d === 5) sawNeutral = true;
+    else if (d !== want) return false;
   }
   return false;
 }

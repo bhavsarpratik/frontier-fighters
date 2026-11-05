@@ -117,3 +117,20 @@ test('chain combos: jab into kick into heavy punch lands as one combo', () => {
   run(s, 40, seq);
   assert.ok(s.f[1].combo >= 3 || s.f[1].hp <= CHARS[KARP].def.hp - 120, `combo ${s.f[1].combo}, hp ${s.f[1].hp}`);
 });
+
+test('a dragon-punch motion rolled through to forward still comes out instead of dashing', () => {
+  const HWANG = CHARS.findIndex((c) => c.def.id === 'hwang');
+  const seq = [RIGHT, RIGHT, RIGHT, DOWN, DOWN, DOWN, DOWN | RIGHT, DOWN | RIGHT, DOWN | RIGHT, RIGHT, RIGHT | LP];
+  const s = setup(120, HWANG, HWANG);
+  run(s, 10, 0);
+  const ev = run(s, seq.length + 3, (k) => seq[k] ?? 0);
+  assert.ok(ev.some((e) => e.t === 'special' && e.s === 'Jacket Spin'), 'rolled 623+P should spin');
+  assert.ok(!ev.some((e) => e.t === 'dash'), 'rolled 623 must not read as a forward dash');
+});
+
+test('tapping forward twice still dashes', () => {
+  const s = setup(200);
+  run(s, 10, 0);
+  const tap = [RIGHT, RIGHT, 0, 0, RIGHT];
+  assert.ok(run(s, tap.length + 2, (k) => tap[k] ?? 0).some((e) => e.t === 'dash'));
+});
