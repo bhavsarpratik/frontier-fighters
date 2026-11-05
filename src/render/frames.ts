@@ -48,6 +48,8 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
   let smear: { k: number; low: boolean; up: boolean } | null = null;
   let pivot = 0; // rotation centre as a fraction of the drawn height (0 = feet)
   let blend: { name: string; a: number } | null = null;
+  let flip = false;
+  let whirl: number | null = null;
   switch (f.state) {
     case S_WALK:
       pose = Math.floor(f.sf / 9) % 2 === 0 ? 'walk' : 'idle';
@@ -79,6 +81,23 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
       const m = c.moves[f.move];
       const ap = attackPose(m);
       const k = m.dmg >= 70 || m.isSuper ? 1.35 : 1;
+      if (m.anim === 'spin') {
+        if (f.mf < m.startup) {
+          pose = 'block';
+          rot = -0.05;
+          dx = -2;
+        } else if (f.mf < m.startup + m.active) {
+          // Fake a 3D turn with the arm-out drawing: squash to an edge, mirror for the back half.
+          const th = ((f.mf - m.startup) / SPIN_PERIOD) * Math.PI * 2;
+          const turn = Math.cos(th);
+          pose = 'punch';
+          flip = turn < 0;
+          sx = Math.max(0.18, Math.abs(turn));
+          dy = -2;
+          whirl = th;
+        } else pose = 'idle';
+        break;
+      }
       if (ap === 'super') {
         pose = f.mf < m.startup ? 'super1' : 'super2';
       } else if (f.mf < m.startup * 0.4) {
@@ -169,6 +188,7 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
     ctx.save();
     ctx.translate(x, y);
     if (f.facing < 0) ctx.scale(-1, 1);
+    if (flip) ctx.scale(-1, 1);
     ctx.translate(dx, dy - py);
     ctx.rotate(rot);
     ctx.translate(0, py);
@@ -185,6 +205,7 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
     }
     ctx.restore();
   };
+  if (whirl !== null) drawWhirl(ctx, x + dx, y + dy, H, whirl, c.def.look.accent, false);
   if (blend && blend.a > 0.02 && fs.img[blend.name]) {
     const keep = { dy, sy };
     dy = 0; sy = 1;
@@ -193,8 +214,36 @@ export function drawFrames(ctx: Ctx, f: FighterState, x: number, y: number, t: n
     layer(name, 1 - blend.a * 0.6);
   } else layer(name, 1);
   ctx.imageSmoothingEnabled = smooth;
-  if (smear) drawSmear(ctx, f, x, y, H, smear);
+  if (whirl !== null) drawWhirl(ctx, x + dx, y + dy, H, whirl, c.def.look.accent, true);
+  else if (smear) drawSmear(ctx, f, x, y, H, smear);
   return true;
+}
+
+const SPIN_PERIOD = 8;
+
+// Elliptical speed rings around the body; the back half is drawn before the fighter, the front half after.
+function drawWhirl(ctx: Ctx, x: number, y: number, H: number, th: number, accent: string, front: boolean): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineCap = 'round';
+  const rings: [number, number, string, number][] = [[0.42, 0.4, accent, 4], [0.66, 0.36, '#e8f6ff', 3], [0.25, 0.32, accent, 3]];
+  for (const [hy, rx, col, lw] of rings) {
+    ctx.strokeStyle = col;
+    for (let i = 0; i < 2; i++) {
+      const a0 = th + i * Math.PI;
+      for (let t = 0; t < 3; t++) {
+        const a = a0 - t * 0.35;
+        const inFront = Math.sin(a) > 0;
+        if (inFront !== front) continue;
+        ctx.globalAlpha = 0.85 - t * 0.28;
+        ctx.lineWidth = lw - t;
+        ctx.beginPath();
+        ctx.ellipse(0, -H * hy, H * rx, H * 0.08, 0, a - 0.5, a);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
 }
 
 export { S_LAND };

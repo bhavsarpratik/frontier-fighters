@@ -12,6 +12,12 @@
  "hassabyss": {
   "knockdown": {
    "mirror": true
+  },
+  "crouch": {
+   "scale": 1.3
+  },
+  "jump": {
+   "scale": 0.9
   }
  },
  "router": {
@@ -32,6 +38,11 @@
  "almighty": {
   "knockdown": {
    "mirror": true
+  }
+ },
+ "codeaux": {
+  "crouch": {
+   "scale": 1.3
   }
  }
 }
