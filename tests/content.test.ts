@@ -97,3 +97,13 @@ test('only one super per round, and it empties the meter', () => {
   for (const i of [UP | SP, 0, 0]) { step(s, i, 0); if (s.f[0].move === c.superIdx) fired = true; }
   assert.equal(fired, false, 'second super in the same round must be blocked');
 });
+
+test('move list arrows flip when the fighter faces left', async () => {
+  const { moveList } = await import('../src/ui/hints.ts');
+  const HW = CHARS.findIndex((c) => c.def.id === 'hwang');
+  const spin = (f: number) => moveList(HW, 'solo', f).find((l) => l.name === 'JACKET SPIN')!;
+  assert.equal(spin(1).easy, 'D + →');
+  assert.equal(spin(1).input, '→↓↘ + A');
+  assert.equal(spin(-1).easy, 'D + ←');
+  assert.equal(spin(-1).input, '←↓↙ + A');
+});

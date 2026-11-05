@@ -26,7 +26,7 @@ export function newFighter(char: number, x: number, facing: number): FighterStat
     chargeB: 0, chargeD: 0, chargeBOk: 0, chargeDOk: 0,
     inv: 0, armor: 0, airUsed: 0, dashDir: 0,
     grabbedBy: -1, grabT: 0, wins: 0, rehired: 0, buff: 0, frozen: 0, lastDmgFrame: 0, dir: 5,
-    buf: 0, bufT: 0, jumpDir: 0, superUsed: 0,
+    buf: 0, bufT: 0, jumpDir: 0, superUsed: 0, spLate: 0,
   };
 }
 
@@ -87,6 +87,7 @@ export function startMove(s: SimState, i: number, idx: number, ex: number): void
   f.armor = m.armor ?? 0;
   f.bufT = 0;
   f.buf = 0;
+  f.spLate = 0;
   if (m.isSuper) {
     f.meter = 0;
     f.superUsed = 1;
@@ -109,6 +110,25 @@ export function startMove(s: SimState, i: number, idx: number, ex: number): void
     f.x = clamp(f.x - f.facing * px(m.fxArg ?? 120), px(STAGE_MARGIN), px(STAGE_W - STAGE_MARGIN));
     s.events.push({ t: 'teleport', p: i });
   }
+}
+
+const simpleKey = (d: number) => (isDown(d) ? 'd' : isFwd(d) ? 'f' : isBack(d) ? 'b' : 'n');
+
+// Pressing the special button a hair before the direction should still pick the directional special.
+// Must stay below the fastest neutral special's startup (5) so nothing has come out yet.
+const SP_LATE_FRAMES = 3;
+
+function lateSpecialSwap(s: SimState, i: number, rel: number): boolean {
+  const f = s.f[i];
+  if (f.spLate <= 0) return false;
+  f.spLate--;
+  const key = simpleKey(rel);
+  if (key === 'n' || f.connected) return false;
+  const sp = CHARS[f.char].specials.find((x) => x.simple === key);
+  if (!sp || sp.move === f.move) return false;
+  f.spLate = 0;
+  startMove(s, i, sp.move, 0);
+  return true;
 }
 
 const bitCount = (v: number) => {
@@ -146,10 +166,11 @@ function tryAttack(s: SimState, i: number, press: number, raw: number, allow: nu
   }
   if (allow < 2) return false;
   if (press & SP) {
-    const key = isDown(d) ? 'd' : isFwd(d) ? 'f' : isBack(d) ? 'b' : 'n';
+    const key = simpleKey(d);
     const sp = c.specials.find((x) => x.simple === key) ?? c.specials.find((x) => x.simple === 'n');
     if (sp) {
       startMove(s, i, sp.move, 0);
+      f.spLate = key === 'n' ? SP_LATE_FRAMES : 0;
       return true;
     }
   }
@@ -382,6 +403,7 @@ export function updateFighter(s: SimState, i: number, rawIn: number): void {
       }
       break;
     case S_ATTACK:
+      if (lateSpecialSwap(s, i, rel)) break;
       runMove(s, i, press, raw);
       break;
     case S_HITSTUN:

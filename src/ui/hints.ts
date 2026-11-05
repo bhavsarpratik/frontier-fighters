@@ -20,17 +20,22 @@ const SIMPLE: Record<string, string> = { n: '', f: '→', d: '↓', b: '←' };
 
 export interface MoveLine { name: string; input: string; easy: string }
 
-export function moveList(char: number, layout: Layout): MoveLine[] {
+const MIRROR: Record<string, string> = { '→': '←', '←': '→', '↘': '↙', '↙': '↘', '↗': '↖', '↖': '↗' };
+const mirrorArrows = (t: string) => t.replace(/[→←↘↙↗↖]/g, (ch) => MIRROR[ch]);
+
+// Motions are written facing right; facing < 0 flips the arrows so the hint matches the keys to press.
+export function moveList(char: number, layout: Layout, facing = 1): MoveLine[] {
   const c = CHARS[char];
   const k = KEYS[layout];
+  const arrows = (t: string) => (facing < 0 ? mirrorArrows(t) : t);
   const out: MoveLine[] = c.specials.map((sp) => {
     const m = c.moves[sp.move];
     const btn = sp.mask & 16 ? k.LP : k.LK;
-    const dir = SIMPLE[sp.simple];
-    return { name: (m.name ?? m.key).toUpperCase(), input: `${MOTION[sp.motion]} + ${btn}`, easy: `${k.SP}${dir ? ' + ' + dir : ''}` };
+    const dir = arrows(SIMPLE[sp.simple]);
+    return { name: (m.name ?? m.key).toUpperCase(), input: `${arrows(MOTION[sp.motion])} + ${btn}`, easy: `${k.SP}${dir ? ' + ' + dir : ''}` };
   });
   const sup = c.moves[c.superIdx];
-  out.push({ name: `${(sup.name ?? 'SUPER').toUpperCase()} (FULL METER, 1 PER ROUND)`, input: `${MOTION['236236']} + ${k.LP}`, easy: `${k.SU}` });
+  out.push({ name: `${(sup.name ?? 'SUPER').toUpperCase()} (FULL METER, 1 PER ROUND)`, input: `${arrows(MOTION['236236'])} + ${k.LP}`, easy: `${k.SU}` });
   return out;
 }
 
@@ -90,7 +95,7 @@ export class Coach {
     const op = s.f[1 - this.p];
     const c = CHARS[me.char];
     const k = KEYS[this.layout];
-    const list = moveList(me.char, this.layout);
+    const list = moveList(me.char, this.layout, me.facing);
     if (s.phase === P_INTRO && s.round === 1) {
       this.cur = null;
       return;
@@ -163,8 +168,8 @@ export function setHints(on: boolean): void {
   }
 }
 
-export function drawMoveList(ctx: CanvasRenderingContext2D, char: number, layout: Layout, x: number, y: number, title: string): void {
-  const lines = moveList(char, layout);
+export function drawMoveList(ctx: CanvasRenderingContext2D, char: number, layout: Layout, facing: number, x: number, y: number, title: string): void {
+  const lines = moveList(char, layout, facing);
   drawText(ctx, title, x, y, { color: '#ffd23e' });
   lines.forEach((l, i) => {
     const yy = y + 14 + i * 24;

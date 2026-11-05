@@ -262,7 +262,7 @@ export class MatchScreen implements Screen {
       ctx.fillStyle = 'rgba(5,3,20,0.94)';
       ctx.fillRect(0, 0, 480, 270);
       const cs = this.coaches.length ? this.coaches : [new Coach(0, isTouch() ? 'touch' : 'solo')];
-      cs.forEach((c, i) => drawMoveList(ctx, this.state.f[c.p].char, c.layout, cs.length > 1 ? 12 + i * 236 : 120, 16, `${cs.length > 1 ? `P${c.p + 1} ` : ''}MOVE LIST`));
+      cs.forEach((c, i) => drawMoveList(ctx, this.state.f[c.p].char, c.layout, this.state.f[c.p].facing, cs.length > 1 ? 12 + i * 236 : 120, 16, `${cs.length > 1 ? `P${c.p + 1} ` : ''}MOVE LIST`));
       drawText(ctx, `EASY = ONE BUTTON.  PRO = MOTION, STRONGER WITH 2 BUTTONS (EX).   ${isTouch() ? 'OK' : 'ENTER'} TO CLOSE`, 240, 256, { align: 'center', color: '#8a84a8' });
     }
   }

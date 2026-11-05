@@ -134,3 +134,27 @@ test('tapping forward twice still dashes', () => {
   const tap = [RIGHT, RIGHT, 0, 0, RIGHT];
   assert.ok(run(s, tap.length + 2, (k) => tap[k] ?? 0).some((e) => e.t === 'dash'));
 });
+
+test('special button pressed a couple of frames before the direction still picks the directional special', () => {
+  const HWANG = CHARS.findIndex((c) => c.def.id === 'hwang');
+  for (const lead of [1, 2]) {
+    const s = setup(120, HWANG, HWANG);
+    run(s, 10, 0);
+    const seq = [...new Array(lead).fill(SP), RIGHT | SP];
+    const names = run(s, seq.length + 6, (k) => seq[k] ?? 0).filter((e) => e.t === 'special').map((e) => e.s);
+    assert.equal(names.at(-1), 'Jacket Spin', `SP ${lead} frame(s) early: got ${names.join(',')}`);
+  }
+  const s = setup(120, HWANG, HWANG);
+  run(s, 10, 0);
+  const names = run(s, 20, (k) => (k < 6 ? SP : 0)).filter((e) => e.t === 'special').map((e) => e.s);
+  assert.deepEqual(names, ['Tensor Core Charge'], 'plain SP stays the neutral special');
+});
+
+test('directional specials are relative to facing: on the right side, back-arrow + SP is forward', () => {
+  const HWANG = CHARS.findIndex((c) => c.def.id === 'hwang');
+  const s = setup(120, HWANG, HWANG);
+  [s.f[0].x, s.f[1].x] = [s.f[1].x, s.f[0].x];
+  run(s, 10, 0);
+  const ev = run(s, 8, (k) => (k < 3 ? LEFT : LEFT | SP));
+  assert.ok(ev.some((e) => e.t === 'special' && e.p === 0 && e.s === 'Jacket Spin'));
+});

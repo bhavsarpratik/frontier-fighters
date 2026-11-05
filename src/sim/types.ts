@@ -52,6 +52,7 @@ export interface FighterState {
   buf: number; bufT: number;
   jumpDir: number;
   superUsed: number;
+  spLate: number;
 }
 
 export interface Projectile {
